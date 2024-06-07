@@ -21,6 +21,7 @@ enum AddressingMode
   case X_Indexed_Zero_Page_Indirect;
   case Zero_Page_Indirect_Y_Indexed;
   case Relative;
+  case Unknown;
 }
 
 class CPU
@@ -47,8 +48,7 @@ class CPU
 
   /**
    * if nothing is sent to the CPU,
-   * we execute LDA Immediate instruction
-   * this will put 255 into the accumulator
+   * we execute NOP instruction
    */
   public function execute(string $opcode = 'NOP', string $operand = null): void
   {
@@ -112,6 +112,6 @@ class CPU
       return AddressingMode::Y_Indexed_Zero_Page;
     }
 
-    return 'Unknown';
+    return AddressingMode::Unknown;
   }
 }
