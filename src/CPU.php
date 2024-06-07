@@ -6,24 +6,6 @@ namespace Emulator;
 
 use Emulator\Memory;
 
-enum AddressingMode
-{
-  case Implied;
-  case Accumulator;
-  case Immediate;
-  case Absolute;
-  case X_Indexed_Absolute;
-  case Y_Indexed_Absolute;
-  case Absolute_Indirect;
-  case Zero_Page;
-  case X_Indexed_Zero_Page;
-  case Y_Indexed_Zero_Page;
-  case X_Indexed_Zero_Page_Indirect;
-  case Zero_Page_Indirect_Y_Indexed;
-  case Relative;
-  case Unknown;
-}
-
 class CPU
 {
   private int $program_counter; // 16bit
@@ -56,7 +38,7 @@ class CPU
     printf($addressing_mode->name);
   }
 
-  function addressing_mode($operand)
+  private function addressing_mode($operand)
   {
     if (empty($operand)) {
       return AddressingMode::Implied;
@@ -72,43 +54,44 @@ class CPU
       return AddressingMode::Immediate;
     }
 
-    if (strpos($operand, '$') === 0 && preg_match('/^\$([0-9A-Fa-f]{2})$/', $operand)) {
+    if (preg_match('/^\\$[0-9A-Fa-f]{2}$/i', $operand)) {
       return AddressingMode::Zero_Page;
     }
 
-    if (strpos($operand, '$') === 0 && preg_match('/^\$([0-9A-Fa-f]{2}),X$/', $operand)) {
+    if (preg_match('/^\\$[0-9A-Fa-f]{2},X$/i', $operand)) {
       return AddressingMode::X_Indexed_Zero_Page;
     }
 
-    if (strpos($operand, '$') === 0 && preg_match('/^\$([0-9A-Fa-f]{4})$/', $operand)) {
+    if (preg_match('/^\\$[0-9A-Fa-f]{4}$/i', $operand)) {
       return AddressingMode::Absolute;
     }
 
-    if (strpos($operand, '$') === 0 && preg_match('/^\$([0-9A-Fa-f]{4}),X$/', $operand)) {
+    if (preg_match('/^\\$[0-9A-Fa-f]{4},X$/i', $operand)) {
       return AddressingMode::X_Indexed_Absolute;
     }
 
-    if (strpos($operand, '$') === 0 && preg_match('/^\$([0-9A-Fa-f]{4}),Y$/', $operand)) {
+    if (preg_match('/^\\$[0-9A-Fa-f]{4},Y$/i', $operand)) {
       return AddressingMode::Y_Indexed_Absolute;
     }
 
-    if (strpos($operand, '$') === 0 && preg_match('/^\$([0-9A-Fa-f]{2}),X\s*\($/', $operand)) {
+    if (preg_match('/^\\(\\$[0-9A-Fa-f]{2},X\\)$/i', $operand)) {
       return AddressingMode::X_Indexed_Zero_Page_Indirect;
     }
 
-    if (strpos($operand, '$') === 0 && preg_match('/^\$([0-9A-Fa-f]{2})\s*\(\s*,Y$/', $operand)) {
+    if (preg_match('/^\\(\\[0-9A-Fa-f]{2}\\),Y$/i', $operand)) {
       return AddressingMode::Zero_Page_Indirect_Y_Indexed;
     }
 
-    if (strpos($operand, '$') === 0 && preg_match('/^\$([0-9A-Fa-f]{4})\s*\($/', $operand)) {
+    if (preg_match('/^\\(\\$[0-9A-Fa-f]{4}\\)$/i', $operand)) {
       return AddressingMode::Absolute_Indirect;
     }
 
-    if (strpos($operand, '$') === 0 && preg_match('/^\$(\w{1,2})$/', $operand)) {
+    /** only if branch instruction! */
+    if (preg_match('/^\\$[0-9A-Fa-f]{4}$/i', $operand)) {
       return AddressingMode::Relative;
     }
 
-    if (strpos($operand, '$') === 0 && preg_match('/^\$([0-9A-Fa-f]{2}),Y$/', $operand)) {
+    if (preg_match('/^\\$[0-9A-Fa-f]{2},Y$/i', $operand)) {
       return AddressingMode::Y_Indexed_Zero_Page;
     }
 
