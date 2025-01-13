@@ -41,15 +41,12 @@ for easy updates and additions to the instruction set.
    git clone https://github.com/yourusername/6502-emulator.git
    cd 6502-emulator
 
-
 2. Install using Composer for autoloading:
 
    ```bash
    composer install
 
-
 3. Ensure you have the `opcodes.json` file in the project root or update the
-
 path in the `CPU` class where instructions are loaded.
 
 ### Usage
