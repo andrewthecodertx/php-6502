@@ -38,16 +38,15 @@ for easy updates and additions to the instruction set.
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/6502-emulator.git
-   cd 6502-emulator
+   git clone https://github.com/yourusername/php-6502.git
+   cd php-6502
 
 2. Install using Composer for autoloading:
 
    ```bash
    composer install
 
-3. Ensure you have the `opcodes.json` file in the project root or update the
-path in the `CPU` class where instructions are loaded.
+3. Ensure you have the `opcodes.json` file in the project root or update the path in the `CPU` class where instructions are loaded.
 
 ### Usage
 
