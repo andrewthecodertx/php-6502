@@ -22,31 +22,49 @@ class Memory
     $this->initialize();
   }
 
-  private function initialize(): void
+  public function initialize(array $rom = []): void
   {
     for ($addr = 0; $addr <= 0xFFFF; $addr++) {
-      $this->memory[$addr] = 0;
+      $this->memory[$addr] = isset($rom[$addr]) ? $rom[$addr] : 0;
     }
   }
 
   public function read_byte(int $addr): int
   {
-    return $this->memory[$addr];
+    if ($addr >= self::ZERO_PAGE_START && $addr <= self::FREE_MEMORY_END) {
+      return $this->memory[$addr];
+    }
+    // Consider throwing an exception or logging for out-of-bounds access
+    return 0; // Return zero for undefined behavior outside defined memory
   }
 
   public function write_byte(int $addr, int $value): void
   {
-    $this->memory[$addr] = $value;
+    if ($addr >= self::ZERO_PAGE_START && $addr <= self::FREE_MEMORY_END) {
+      $this->memory[$addr] = $value;
+    }
+    // Consider throwing an exception or logging for out-of-bounds write
   }
 
-  public function read_word($addr): int
+  public function read_word(int $addr): int
   {
-    return ($this->read_byte($addr) << 8) | $this->read_byte($addr + 1);
+    return ($this->read_byte($addr + 1) << 8) | $this->read_byte($addr);
   }
 
-  public function write_word($addr, $value): void
+  public function write_word(int $addr, int $value): void
   {
-    $this->write_byte($addr, ($value >> 8) & 0xFF);
-    $this->write_byte($addr + 1, $value & 0xFF);
+    $this->write_byte($addr, $value & 0xFF);
+    $this->write_byte($addr + 1, ($value >> 8) & 0xFF);
+  }
+
+  // Stack operations for convenience
+  public function push(int $value, &$stack_pointer): void
+  {
+    $this->write_byte(self::STACK_START + $stack_pointer--, $value);
+  }
+
+  public function pop(&$stack_pointer): int
+  {
+    return $this->read_byte(self::STACK_START + ++$stack_pointer);
   }
 }

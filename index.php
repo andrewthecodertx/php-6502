@@ -5,7 +5,8 @@ use Emulator\CPU;
 
 require_once "vendor/autoload.php";
 
-$cpu = new CPU;
+$memory = new Memory;
+$cpu = new CPU($memory);
 
 $cpu->reset();
 $cpu->execute('LDA', '($FF,X)');
