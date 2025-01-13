@@ -99,7 +99,7 @@ class CPU
       return AddressingMode::X_Indexed_Zero_Page_Indirect;
     }
 
-    if (preg_match('/^\\(\\[0-9A-Fa-f]{2}\\),Y$/i', $operand)) {
+    if (preg_match('/^\\(\\$[0-9A-Fa-f]{2}\\)\\,Y$/i', $operand)) { // Fixed pattern
       return AddressingMode::Zero_Page_Indirect_Y_Indexed;
     }
 
@@ -107,15 +107,16 @@ class CPU
       return AddressingMode::Absolute_Indirect;
     }
 
-    /** only if branch instruction! */
-    if (preg_match('/^\\$[0-9A-Fa-f]{4}$/i', $operand)) {
-      return AddressingMode::Relative;
-    }
-
     if (preg_match('/^\\$[0-9A-Fa-f]{2},Y$/i', $operand)) {
       return AddressingMode::Y_Indexed_Zero_Page;
     }
 
+    /** only if branch instruction! */
+    if (preg_match('/^\\$[0-9A-Fa-f]{2}$/i', $operand)) { // Adjusted for relative addressing
+      return AddressingMode::Relative;
+    }
+
+    // Consider throwing an exception here for debugging purposes
     return AddressingMode::Unknown;
   }
 }
