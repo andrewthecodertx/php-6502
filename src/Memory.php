@@ -34,8 +34,10 @@ class Memory
     if ($addr >= self::ZERO_PAGE_START && $addr <= self::FREE_MEMORY_END) {
       return $this->memory[$addr];
     }
-    // Consider throwing an exception or logging for out-of-bounds access
-    return 0; // Return zero for undefined behavior outside defined memory
+
+    //TODO throw an exception for or log for out-of-bounds access
+
+    return 0;
   }
 
   public function write_byte(int $addr, int $value): void

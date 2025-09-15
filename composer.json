@@ -10,7 +10,7 @@
   "autoload": {
     "psr-4": {
       "Emulator\\": "src/",
-      "Test\\": "tests/"
+      "Tests\": "tests/"
     }
   },
   "authors": [

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Emulator;
 
-class InstructionRegistry
+class InstructionRegister
 {
   /** @var array<string, Opcode> */
   private array $opcodes = [];
