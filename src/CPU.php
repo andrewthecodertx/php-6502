@@ -10,6 +10,9 @@ use Emulator\Instructions\Arithmetic;
 use Emulator\Instructions\Logic;
 use Emulator\Instructions\ShiftRotate;
 use Emulator\Instructions\IncDec;
+use Emulator\Instructions\FlowControl;
+use Emulator\Instructions\Stack;
+use Emulator\Instructions\Flags;
 
 class CPU
 {
@@ -29,6 +32,9 @@ class CPU
   private Logic $logicHandler;
   private ShiftRotate $shiftRotateHandler;
   private IncDec $incDecHandler;
+  private FlowControl $flowControlHandler;
+  private Stack $stackHandler;
+  private Flags $flagsHandler;
 
   public function __construct(private Memory $memory)
   {
@@ -40,6 +46,9 @@ class CPU
     $this->logicHandler = new Logic($this);
     $this->shiftRotateHandler = new ShiftRotate($this);
     $this->incDecHandler = new IncDec($this);
+    $this->flowControlHandler = new FlowControl($this);
+    $this->stackHandler = new Stack($this);
+    $this->flagsHandler = new Flags($this);
     $this->initializeInstructionHandlers();
     $this->reset();
   }
@@ -220,6 +229,36 @@ class CPU
       'DEX' => fn(Opcode $opcode) => $this->incDecHandler->dex($opcode),
       'INY' => fn(Opcode $opcode) => $this->incDecHandler->iny($opcode),
       'DEY' => fn(Opcode $opcode) => $this->incDecHandler->dey($opcode),
+
+      // Flow Control Operations
+      'BEQ' => fn(Opcode $opcode) => $this->flowControlHandler->beq($opcode),
+      'BNE' => fn(Opcode $opcode) => $this->flowControlHandler->bne($opcode),
+      'BCC' => fn(Opcode $opcode) => $this->flowControlHandler->bcc($opcode),
+      'BCS' => fn(Opcode $opcode) => $this->flowControlHandler->bcs($opcode),
+      'BPL' => fn(Opcode $opcode) => $this->flowControlHandler->bpl($opcode),
+      'BMI' => fn(Opcode $opcode) => $this->flowControlHandler->bmi($opcode),
+      'BVC' => fn(Opcode $opcode) => $this->flowControlHandler->bvc($opcode),
+      'BVS' => fn(Opcode $opcode) => $this->flowControlHandler->bvs($opcode),
+      'JMP' => fn(Opcode $opcode) => $this->flowControlHandler->jmp($opcode),
+      'JSR' => fn(Opcode $opcode) => $this->flowControlHandler->jsr($opcode),
+      'RTS' => fn(Opcode $opcode) => $this->flowControlHandler->rts($opcode),
+      'BRK' => fn(Opcode $opcode) => $this->flowControlHandler->brk($opcode),
+      'RTI' => fn(Opcode $opcode) => $this->flowControlHandler->rti($opcode),
+
+      // Stack Operations
+      'PHA' => fn(Opcode $opcode) => $this->stackHandler->pha($opcode),
+      'PLA' => fn(Opcode $opcode) => $this->stackHandler->pla($opcode),
+      'PHP' => fn(Opcode $opcode) => $this->stackHandler->php($opcode),
+      'PLP' => fn(Opcode $opcode) => $this->stackHandler->plp($opcode),
+
+      // Flag Operations
+      'SEC' => fn(Opcode $opcode) => $this->flagsHandler->sec($opcode),
+      'CLC' => fn(Opcode $opcode) => $this->flagsHandler->clc($opcode),
+      'SEI' => fn(Opcode $opcode) => $this->flagsHandler->sei($opcode),
+      'CLI' => fn(Opcode $opcode) => $this->flagsHandler->cli($opcode),
+      'SED' => fn(Opcode $opcode) => $this->flagsHandler->sed($opcode),
+      'CLD' => fn(Opcode $opcode) => $this->flagsHandler->cld($opcode),
+      'CLV' => fn(Opcode $opcode) => $this->flagsHandler->clv($opcode),
 
       // System
       'NOP' => fn(Opcode $opcode) => $opcode->getCycles(), // NOP just takes cycles, does nothing
