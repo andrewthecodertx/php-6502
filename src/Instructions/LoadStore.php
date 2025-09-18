@@ -10,27 +10,25 @@ use Emulator\StatusRegister;
 
 class LoadStore
 {
-    public function __construct(private CPU $cpu)
-    {
-    }
+  public function __construct(private CPU $cpu) {}
 
-    public function lda(Opcode $opcode): int
-    {
-        $address = $this->cpu->getAddress($opcode->getAddressingMode());
-        $value = $this->cpu->getMemory()->read_byte($address);
-        $this->cpu->setAccumulator($value);
+  public function lda(Opcode $opcode): int
+  {
+    $address = $this->cpu->getAddress($opcode->getAddressingMode());
+    $value = $this->cpu->getMemory()->read_byte($address);
+    $this->cpu->setAccumulator($value);
 
-        $this->cpu->status->set(StatusRegister::ZERO, $value === 0);
-        $this->cpu->status->set(StatusRegister::NEGATIVE, ($value & 0x80) !== 0);
+    $this->cpu->status->set(StatusRegister::ZERO, $value === 0);
+    $this->cpu->status->set(StatusRegister::NEGATIVE, ($value & 0x80) !== 0);
 
-        return $opcode->getCycles();
-    }
+    return $opcode->getCycles();
+  }
 
-    public function sta(Opcode $opcode): int
-    {
-        $address = $this->cpu->getAddress($opcode->getAddressingMode());
-        $this->cpu->getMemory()->write_byte($address, $this->cpu->getAccumulator());
+  public function sta(Opcode $opcode): int
+  {
+    $address = $this->cpu->getAddress($opcode->getAddressingMode());
+    $this->cpu->getMemory()->write_byte($address, $this->cpu->getAccumulator());
 
-        return $opcode->getCycles();
-    }
+    return $opcode->getCycles();
+  }
 }

@@ -31,6 +31,7 @@ class Memory
 
   public function read_byte(int $addr): int
   {
+    $addr = $addr & 0xFFFF; // Ensure 16-bit address space
     if ($addr >= self::ZERO_PAGE_START && $addr <= self::FREE_MEMORY_END) {
       return $this->memory[$addr];
     }
@@ -42,8 +43,9 @@ class Memory
 
   public function write_byte(int $addr, int $value): void
   {
+    $addr = $addr & 0xFFFF; // Ensure 16-bit address space
     if ($addr >= self::ZERO_PAGE_START && $addr <= self::FREE_MEMORY_END) {
-      $this->memory[$addr] = $value;
+      $this->memory[$addr] = $value & 0xFF; // Ensure 8-bit values
     }
     // Consider throwing an exception or logging for out-of-bounds write
   }

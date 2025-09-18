@@ -6,13 +6,14 @@ namespace Emulator;
 
 class StatusRegister
 {
-  // Flag positions
+  // Flag positions per 6502 specification
   public const CARRY = 0;
   public const ZERO = 1;
   public const INTERRUPT_DISABLE = 2;
   public const DECIMAL_MODE = 3;
   public const BREAK_COMMAND = 4;
-  public const OVERFLOW = 5;
+  public const UNUSED = 5; // Always 1
+  public const OVERFLOW = 6;
   public const NEGATIVE = 7;
 
   private int $flags = 0b00100000; // Default state
