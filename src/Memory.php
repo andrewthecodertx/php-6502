@@ -19,13 +19,14 @@ class Memory
 
   public function __construct()
   {
-    $this->initialize();
+    // No need to pre-allocate memory - use lazy allocation
   }
 
   public function initialize(array $rom = []): void
   {
-    for ($addr = 0; $addr <= 0xFFFF; $addr++) {
-      $this->memory[$addr] = isset($rom[$addr]) ? $rom[$addr] : 0;
+    // Only set specific ROM data, don't pre-allocate entire memory space
+    foreach ($rom as $addr => $value) {
+      $this->memory[$addr] = $value & 0xFF;
     }
   }
 
@@ -33,7 +34,7 @@ class Memory
   {
     $addr = $addr & 0xFFFF; // Ensure 16-bit address space
     if ($addr >= self::ZERO_PAGE_START && $addr <= self::FREE_MEMORY_END) {
-      return $this->memory[$addr];
+      return $this->memory[$addr] ?? 0; // Return 0 for uninitialized memory
     }
 
     //TODO throw an exception for or log for out-of-bounds access

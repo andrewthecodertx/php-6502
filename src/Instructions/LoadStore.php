@@ -31,4 +31,44 @@ class LoadStore
 
     return $opcode->getCycles();
   }
+
+  public function ldx(Opcode $opcode): int
+  {
+    $address = $this->cpu->getAddress($opcode->getAddressingMode());
+    $value = $this->cpu->getMemory()->read_byte($address);
+    $this->cpu->setRegisterX($value);
+
+    $this->cpu->status->set(StatusRegister::ZERO, $value === 0);
+    $this->cpu->status->set(StatusRegister::NEGATIVE, ($value & 0x80) !== 0);
+
+    return $opcode->getCycles();
+  }
+
+  public function ldy(Opcode $opcode): int
+  {
+    $address = $this->cpu->getAddress($opcode->getAddressingMode());
+    $value = $this->cpu->getMemory()->read_byte($address);
+    $this->cpu->setRegisterY($value);
+
+    $this->cpu->status->set(StatusRegister::ZERO, $value === 0);
+    $this->cpu->status->set(StatusRegister::NEGATIVE, ($value & 0x80) !== 0);
+
+    return $opcode->getCycles();
+  }
+
+  public function stx(Opcode $opcode): int
+  {
+    $address = $this->cpu->getAddress($opcode->getAddressingMode());
+    $this->cpu->getMemory()->write_byte($address, $this->cpu->getRegisterX());
+
+    return $opcode->getCycles();
+  }
+
+  public function sty(Opcode $opcode): int
+  {
+    $address = $this->cpu->getAddress($opcode->getAddressingMode());
+    $this->cpu->getMemory()->write_byte($address, $this->cpu->getRegisterY());
+
+    return $opcode->getCycles();
+  }
 }

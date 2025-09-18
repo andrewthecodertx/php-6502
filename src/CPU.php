@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Emulator;
 
 use Emulator\Instructions\LoadStore;
+use Emulator\Instructions\Transfer;
 
 class CPU
 {
@@ -19,12 +20,14 @@ class CPU
   private InstructionRegister $instructionRegister;
   private array $instructionHandlers = [];
   private LoadStore $loadStoreHandler;
+  private Transfer $transferHandler;
 
   public function __construct(private Memory $memory)
   {
     $this->status = new StatusRegister();
     $this->instructionRegister = new InstructionRegister();
     $this->loadStoreHandler = new LoadStore($this);
+    $this->transferHandler = new Transfer($this);
     $this->initializeInstructionHandlers();
     $this->reset();
   }
@@ -163,8 +166,23 @@ class CPU
   private function initializeInstructionHandlers(): void
   {
     $this->instructionHandlers = [
+      // Load/Store Operations
       'LDA' => fn(Opcode $opcode) => $this->loadStoreHandler->lda($opcode),
+      'LDX' => fn(Opcode $opcode) => $this->loadStoreHandler->ldx($opcode),
+      'LDY' => fn(Opcode $opcode) => $this->loadStoreHandler->ldy($opcode),
       'STA' => fn(Opcode $opcode) => $this->loadStoreHandler->sta($opcode),
+      'STX' => fn(Opcode $opcode) => $this->loadStoreHandler->stx($opcode),
+      'STY' => fn(Opcode $opcode) => $this->loadStoreHandler->sty($opcode),
+
+      // Register Transfers
+      'TAX' => fn(Opcode $opcode) => $this->transferHandler->tax($opcode),
+      'TAY' => fn(Opcode $opcode) => $this->transferHandler->tay($opcode),
+      'TXA' => fn(Opcode $opcode) => $this->transferHandler->txa($opcode),
+      'TYA' => fn(Opcode $opcode) => $this->transferHandler->tya($opcode),
+      'TSX' => fn(Opcode $opcode) => $this->transferHandler->tsx($opcode),
+      'TXS' => fn(Opcode $opcode) => $this->transferHandler->txs($opcode),
+
+      // System
       'NOP' => fn(Opcode $opcode) => $opcode->getCycles(), // NOP just takes cycles, does nothing
     ];
   }
