@@ -25,26 +25,59 @@ class MonitoredCPU extends CPU
   {
     $this->resetInProgress = true;
 
-    // 6502 reset sequence takes 7 cycles
-    // Cycles 1-6: Internal operations (stack pointer decrement, etc.)
-    // Cycle 7: Read reset vector low byte
-    // Cycle 8: Read reset vector high byte
-
     echo "=== CPU RESET SEQUENCE ===\n";
     echo "CYCLE  ADDRESS_BUS       DATA_BUS  ADDR_HEX  OP  DATA_HEX  DESCRIPTION\n";
     echo "-----  ----------------  --------  --------  --  --------  -----------\n";
 
-    // Simulate reset sequence
-    for ($cycle = 1; $cycle <= 6; $cycle++) {
-      $this->busMonitor->incrementCycle();
-      echo sprintf(
-        "%5d  ----------------  --------    ----   --     --    Internal reset operations\n",
-        $this->busMonitor->getCurrentCycle()
-      );
-    }
+    // Clear any previous bus activity
+    $this->busMonitor->reset();
 
     // Now perform actual reset with bus monitoring
     parent::reset();
+
+    // Display the actual bus activity that was logged
+    $activity = $this->busMonitor->getBusActivity();
+    foreach ($activity as $i => $op) {
+      $addressBinary = sprintf('%016b', $op['address']);
+      $dataBinary = sprintf('%08b', $op['data']);
+      $addressHex = sprintf('%04X', $op['address']);
+      $dataHex = sprintf('%02X', $op['data']);
+
+      // Determine description based on cycle
+      $description = "";
+      switch ($i + 1) {
+        case 1:
+          $description = "Dummy read PC";
+          break;
+        case 2:
+          $description = "Dummy read PC+1";
+          break;
+        case 3:
+        case 4:
+        case 5:
+          $description = "Dummy stack read";
+          break;
+        case 6:
+          $description = "Reset vector low";
+          break;
+        case 7:
+          $description = "Reset vector high";
+          break;
+        default:
+          $description = "Reset operation";
+      }
+
+      echo sprintf(
+        "%5d  %s  %s    %s   %s     %s  %s\n",
+        $i + 1,
+        $addressBinary,
+        $dataBinary,
+        $addressHex,
+        $op['operation'],
+        $dataHex,
+        $description
+      );
+    }
 
     $this->resetInProgress = false;
 
