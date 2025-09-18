@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests;
+namespace Test;
 
 use PHPUnit\Framework\TestCase;
 use Emulator\StatusRegister;
@@ -212,4 +212,3 @@ class StatusRegisterTest extends TestCase
     $this->assertFalse($this->status->get(StatusRegister::CARRY));
   }
 }
-

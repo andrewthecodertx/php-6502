@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests;
+namespace Test;
 
 use PHPUnit\Framework\TestCase;
 use Emulator\CPU;
@@ -208,3 +208,4 @@ class ArithmeticInstructionsTest extends TestCase
     $this->assertFalse($this->cpu->status->get(StatusRegister::ZERO));
   }
 }
+

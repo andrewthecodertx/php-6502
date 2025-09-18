@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests;
+namespace Test;
 
 use PHPUnit\Framework\TestCase;
 use Emulator\BusMonitor;
@@ -296,4 +296,3 @@ class IntegrationTest extends TestCase
     $this->assertEquals(0x567A, $addr); // 0x5678 + 0x02
   }
 }
-

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests;
+namespace Test;
 
 use PHPUnit\Framework\TestCase;
 use Emulator\CPU;
@@ -299,8 +299,10 @@ class FlowControlTest extends TestCase
     //         BNE loop
     $this->memory->initialize([
       0x8000 => 0xE8,       // INX
-      0x8001 => 0xE0, 0x8002 => 0x05, // CPX #$05
-      0x8003 => 0xD0, 0x8004 => 0xFB, // BNE loop (branch back -5)
+      0x8001 => 0xE0,
+      0x8002 => 0x05, // CPX #$05
+      0x8003 => 0xD0,
+      0x8004 => 0xFB, // BNE loop (branch back -5)
     ]);
 
     $this->cpu->pc = 0x8000;
@@ -320,3 +322,4 @@ class FlowControlTest extends TestCase
     $this->assertTrue($this->cpu->status->get(StatusRegister::ZERO)); // CPX should set zero flag
   }
 }
+

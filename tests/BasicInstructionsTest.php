@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests;
+namespace Test;
 
 use PHPUnit\Framework\TestCase;
 use Emulator\CPU;
@@ -349,4 +349,3 @@ class BasicInstructionsTest extends TestCase
     $this->assertEquals(0x90, $this->cpu->sp);
   }
 }
-

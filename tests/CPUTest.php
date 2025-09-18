@@ -2,15 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Tests;
+namespace Test;
 
 use PHPUnit\Framework\TestCase;
 use Emulator\CPU;
 use Emulator\Memory;
 use Emulator\StatusRegister;
-use Emulator\BusMonitor;
-use Emulator\MonitoredMemory;
-use Emulator\MonitoredCPU;
 
 class CPUTest extends TestCase
 {
