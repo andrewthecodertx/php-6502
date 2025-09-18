@@ -324,9 +324,9 @@ class CPUTest extends TestCase
     $this->cpu->pc = 0x8000;
     $this->memory->write_byte(0x8000, 0x05); // Positive offset
 
-    $address = $this->cpu->getAddress('Relative');
-    $this->assertEquals(0x8006, $address); // 0x8001 + 0x05 (PC after reading offset)
-    $this->assertEquals(0x8001, $this->cpu->pc);
+    $offset = $this->cpu->getAddress('Relative');
+    $this->assertEquals(0x05, $offset); // Should return the raw offset
+    $this->assertEquals(0x8001, $this->cpu->pc); // PC after reading offset
   }
 
   public function testAddressingModeRelativeNegative(): void
@@ -334,8 +334,8 @@ class CPUTest extends TestCase
     $this->cpu->pc = 0x8000;
     $this->memory->write_byte(0x8000, 0xFB); // -5 in two's complement
 
-    $address = $this->cpu->getAddress('Relative');
-    $this->assertEquals(0x7FFC, $address); // 0x8001 - 5
+    $offset = $this->cpu->getAddress('Relative');
+    $this->assertEquals(0xFB, $offset); // Should return the raw offset
     $this->assertEquals(0x8001, $this->cpu->pc);
   }
 
@@ -351,4 +351,3 @@ class CPUTest extends TestCase
     $this->assertEquals(0, $address); // No memory address
   }
 }
-

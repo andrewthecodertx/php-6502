@@ -120,19 +120,17 @@ class FlowControl
   private function branch(Opcode $opcode, bool $condition): int
   {
     $cycles = $opcode->getCycles();
+    $offset = $this->cpu->getAddress($opcode->getAddressingMode());
 
     if ($condition) {
-      $offset = $this->cpu->getAddress($opcode->getAddressingMode());
       $oldPC = $this->cpu->pc;
 
       // Apply signed offset to PC
       if ($offset & 0x80) {
-        // Negative offset (two's complement)
-        $this->cpu->pc = ($oldPC - (256 - $offset)) & 0xFFFF;
-      } else {
-        // Positive offset
-        $this->cpu->pc = ($oldPC + $offset) & 0xFFFF;
+        // Negative offset
+        $offset -= 256;
       }
+      $this->cpu->pc = ($oldPC + $offset) & 0xFFFF;
 
       // Add extra cycle for taken branch
       $cycles++;

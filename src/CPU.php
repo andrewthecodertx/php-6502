@@ -443,13 +443,7 @@ class CPU
   {
     $offset = $this->memory->read_byte($this->pc);
     $this->pc++;
-
-    // Sign extend the 8-bit offset to 16-bit
-    if ($offset & 0x80) {
-      $offset |= 0xFF00; // Negative offset
-    }
-
-    return ($this->pc + $offset) & 0xFFFF;
+    return $offset;
   }
 
   private function implied(): int
