@@ -6,6 +6,10 @@ namespace Emulator;
 
 use Emulator\Instructions\LoadStore;
 use Emulator\Instructions\Transfer;
+use Emulator\Instructions\Arithmetic;
+use Emulator\Instructions\Logic;
+use Emulator\Instructions\ShiftRotate;
+use Emulator\Instructions\IncDec;
 
 class CPU
 {
@@ -21,6 +25,10 @@ class CPU
   private array $instructionHandlers = [];
   private LoadStore $loadStoreHandler;
   private Transfer $transferHandler;
+  private Arithmetic $arithmeticHandler;
+  private Logic $logicHandler;
+  private ShiftRotate $shiftRotateHandler;
+  private IncDec $incDecHandler;
 
   public function __construct(private Memory $memory)
   {
@@ -28,6 +36,10 @@ class CPU
     $this->instructionRegister = new InstructionRegister();
     $this->loadStoreHandler = new LoadStore($this);
     $this->transferHandler = new Transfer($this);
+    $this->arithmeticHandler = new Arithmetic($this);
+    $this->logicHandler = new Logic($this);
+    $this->shiftRotateHandler = new ShiftRotate($this);
+    $this->incDecHandler = new IncDec($this);
     $this->initializeInstructionHandlers();
     $this->reset();
   }
@@ -181,6 +193,33 @@ class CPU
       'TYA' => fn(Opcode $opcode) => $this->transferHandler->tya($opcode),
       'TSX' => fn(Opcode $opcode) => $this->transferHandler->tsx($opcode),
       'TXS' => fn(Opcode $opcode) => $this->transferHandler->txs($opcode),
+
+      // Arithmetic Operations
+      'ADC' => fn(Opcode $opcode) => $this->arithmeticHandler->adc($opcode),
+      'SBC' => fn(Opcode $opcode) => $this->arithmeticHandler->sbc($opcode),
+      'CMP' => fn(Opcode $opcode) => $this->arithmeticHandler->cmp($opcode),
+      'CPX' => fn(Opcode $opcode) => $this->arithmeticHandler->cpx($opcode),
+      'CPY' => fn(Opcode $opcode) => $this->arithmeticHandler->cpy($opcode),
+
+      // Logic Operations
+      'AND' => fn(Opcode $opcode) => $this->logicHandler->and($opcode),
+      'ORA' => fn(Opcode $opcode) => $this->logicHandler->ora($opcode),
+      'EOR' => fn(Opcode $opcode) => $this->logicHandler->eor($opcode),
+      'BIT' => fn(Opcode $opcode) => $this->logicHandler->bit($opcode),
+
+      // Shift/Rotate Operations
+      'ASL' => fn(Opcode $opcode) => $this->shiftRotateHandler->asl($opcode),
+      'LSR' => fn(Opcode $opcode) => $this->shiftRotateHandler->lsr($opcode),
+      'ROL' => fn(Opcode $opcode) => $this->shiftRotateHandler->rol($opcode),
+      'ROR' => fn(Opcode $opcode) => $this->shiftRotateHandler->ror($opcode),
+
+      // Increment/Decrement Operations
+      'INC' => fn(Opcode $opcode) => $this->incDecHandler->inc($opcode),
+      'DEC' => fn(Opcode $opcode) => $this->incDecHandler->dec($opcode),
+      'INX' => fn(Opcode $opcode) => $this->incDecHandler->inx($opcode),
+      'DEX' => fn(Opcode $opcode) => $this->incDecHandler->dex($opcode),
+      'INY' => fn(Opcode $opcode) => $this->incDecHandler->iny($opcode),
+      'DEY' => fn(Opcode $opcode) => $this->incDecHandler->dey($opcode),
 
       // System
       'NOP' => fn(Opcode $opcode) => $opcode->getCycles(), // NOP just takes cycles, does nothing
