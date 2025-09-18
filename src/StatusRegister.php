@@ -39,6 +39,6 @@ class StatusRegister
 
   public function fromInt(int $value): void
   {
-    $this->flags = $value;
+    $this->flags = $value & 0xFF;
   }
 }

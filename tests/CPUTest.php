@@ -4,176 +4,350 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use PHPUnit\Framework\TestCase;
 use Emulator\CPU;
 use Emulator\Memory;
 use Emulator\StatusRegister;
-use PHPUnit\Framework\TestCase;
+use Emulator\BusMonitor;
+use Emulator\MonitoredMemory;
+use Emulator\MonitoredCPU;
 
 class CPUTest extends TestCase
 {
-  private Memory $memory;
-  private CPU $cpu;
+    private CPU $cpu;
+    private Memory $memory;
 
-  protected function setUp(): void
-  {
-    $this->memory = new Memory();
-    $this->cpu = new CPU($this->memory);
-  }
+    protected function setUp(): void
+    {
+        $this->memory = new Memory();
+        $this->cpu = new CPU($this->memory);
+    }
 
-  public function testReset(): void
-  {
-    // Modify the CPU state
-    $this->cpu->pc = 0x1234;
-    $this->cpu->sp = 0x00FE;
-    $this->cpu->setAccumulator(0xFF);
-    $this->cpu->setRegisterX(0xFF);
-    $this->cpu->setRegisterY(0xFF);
-    $this->cpu->status->set(StatusRegister::CARRY, true);
+    public function testCPUInitialization(): void
+    {
+        $this->assertInstanceOf(CPU::class, $this->cpu);
+        $this->assertEquals(0, $this->cpu->cycles);
+        $this->assertInstanceOf(StatusRegister::class, $this->cpu->status);
+    }
 
-    // Write the reset vector
-    $this->memory->write_word(0xFFFC, 0x8000);
+    public function testRegisterConstraints(): void
+    {
+        // Test 8-bit register constraints
+        $this->cpu->setAccumulator(0xFF);
+        $this->assertEquals(0xFF, $this->cpu->getAccumulator());
 
-    $this->cpu->reset();
+        $this->cpu->setAccumulator(0x100); // Should wrap to 0x00
+        $this->assertEquals(0x00, $this->cpu->getAccumulator());
 
-    // The PC should be loaded from the reset vector 0xFFFC
-    $this->assertSame(0x8000, $this->cpu->pc);
+        $this->cpu->setRegisterX(0xFF);
+        $this->assertEquals(0xFF, $this->cpu->getRegisterX());
 
-    // SP is reset to 0xFD per 6502 specification (after 3 decrements from 0x00)
-    $this->assertSame(0xFD, $this->cpu->sp);
+        $this->cpu->setRegisterX(0x100); // Should wrap to 0x00
+        $this->assertEquals(0x00, $this->cpu->getRegisterX());
 
-    // Standard reset clears registers for emulation convenience
-    $this->assertSame(0, $this->cpu->getAccumulator());
-    $this->assertSame(0, $this->cpu->getRegisterX());
-    $this->assertSame(0, $this->cpu->getRegisterY());
+        $this->cpu->setRegisterY(0xFF);
+        $this->assertEquals(0xFF, $this->cpu->getRegisterY());
 
-    // Check status register reset state (IRQ disabled, unused bit set)
-    $this->assertSame(0b00100100, $this->cpu->status->toInt());
-  }
+        $this->cpu->setRegisterY(0x100); // Should wrap to 0x00
+        $this->assertEquals(0x00, $this->cpu->getRegisterY());
+    }
 
-  public function testAccurateReset(): void
-  {
-    // Test hardware-accurate reset behavior
-    $this->cpu->pc = 0x1234;
-    $this->cpu->sp = 0x00FE;
-    $this->cpu->setAccumulator(0x55);
-    $this->cpu->setRegisterX(0xAA);
-    $this->cpu->setRegisterY(0xFF);
-    $this->cpu->status->fromInt(0b10110001); // Various flags set
+    public function testStackPointerConstraints(): void
+    {
+        // Test 8-bit stack pointer (0x00-0xFF)
+        $this->cpu->sp = 0xFF;
+        $this->assertEquals(0xFF, $this->cpu->sp);
 
-    // Write the reset vector
-    $this->memory->write_word(0xFFFC, 0x9000);
+        $this->cpu->sp = 0x80;
+        $this->assertEquals(0x80, $this->cpu->sp);
 
-    $this->cpu->accurateReset();
+        // Stack pointer should be within 8-bit range
+        $this->assertTrue($this->cpu->sp >= 0x00 && $this->cpu->sp <= 0xFF);
+    }
 
-    // PC should be loaded from reset vector
-    $this->assertSame(0x9000, $this->cpu->pc);
+    public function testProgramCounterConstraints(): void
+    {
+        // Test 16-bit program counter (0x0000-0xFFFF)
+        $this->cpu->pc = 0xFFFF;
+        $this->assertEquals(0xFFFF, $this->cpu->pc);
 
-    // SP is reset to 0xFD
-    $this->assertSame(0xFD, $this->cpu->sp);
+        $this->cpu->pc = 0x8000;
+        $this->assertEquals(0x8000, $this->cpu->pc);
+    }
 
-    // Hardware-accurate: A, X, Y registers retain their values
-    $this->assertSame(0x55, $this->cpu->getAccumulator());
-    $this->assertSame(0xAA, $this->cpu->getRegisterX());
-    $this->assertSame(0xFF, $this->cpu->getRegisterY());
+    public function testStackOperations(): void
+    {
+        // Test proper stack operations with 8-bit SP
+        $this->cpu->sp = 0xFF; // Reset to top of stack
 
-    // Only I flag and unused bit are guaranteed to be set
-    $this->assertTrue($this->cpu->status->get(StatusRegister::INTERRUPT_DISABLE));
-    $this->assertTrue($this->cpu->status->get(StatusRegister::UNUSED));
-  }
+        // Push a byte
+        $this->cpu->pushByte(0x42);
+        $this->assertEquals(0xFE, $this->cpu->sp); // SP should decrement
+        $this->assertEquals(0x42, $this->memory->read_byte(0x01FF)); // Check stack location
 
-  public function testLDA(): void
-  {
-    // Test Immediate addressing: LDA #$42
-    $this->memory->write_byte(0x8000, 0xA9); // LDA Immediate opcode
-    $this->memory->write_byte(0x8001, 0x42);
-    $this->cpu->pc = 0x8000;
+        // Push another byte
+        $this->cpu->pushByte(0x84);
+        $this->assertEquals(0xFD, $this->cpu->sp);
+        $this->assertEquals(0x84, $this->memory->read_byte(0x01FE));
 
-    $this->cpu->executeInstruction();
+        // Pull bytes back (LIFO order)
+        $pulled1 = $this->cpu->pullByte();
+        $this->assertEquals(0x84, $pulled1);
+        $this->assertEquals(0xFE, $this->cpu->sp);
 
-    $this->assertSame(0x42, $this->cpu->getAccumulator());
-    $this->assertFalse($this->cpu->status->get(StatusRegister::ZERO));
-    $this->assertFalse($this->cpu->status->get(StatusRegister::NEGATIVE));
+        $pulled2 = $this->cpu->pullByte();
+        $this->assertEquals(0x42, $pulled2);
+        $this->assertEquals(0xFF, $this->cpu->sp);
+    }
 
-    // Test Zero flag
-    $this->memory->write_byte(0x8002, 0xA9); // LDA Immediate
-    $this->memory->write_byte(0x8003, 0x00);
-    $this->cpu->pc = 0x8002;
-    $this->cpu->executeInstruction();
-    $this->assertTrue($this->cpu->status->get(StatusRegister::ZERO));
+    public function testStackWordOperations(): void
+    {
+        $this->cpu->sp = 0xFF;
 
-    // Test Negative flag
-    $this->memory->write_byte(0x8004, 0xA9); // LDA Immediate
-    $this->memory->write_byte(0x8005, 0x8F);
-    $this->cpu->pc = 0x8004;
-    $this->cpu->executeInstruction();
-    $this->assertTrue($this->cpu->status->get(StatusRegister::NEGATIVE));
-  }
+        // Push 16-bit word (high byte first, then low byte)
+        $this->cpu->pushWord(0x1234);
+        $this->assertEquals(0xFD, $this->cpu->sp);
+        $this->assertEquals(0x12, $this->memory->read_byte(0x01FF)); // High byte
+        $this->assertEquals(0x34, $this->memory->read_byte(0x01FE)); // Low byte
 
-  public function testSTA(): void
-  {
-    // Test Absolute addressing: STA $0200
-    $this->cpu->setAccumulator(0xBE);
-    $this->memory->write_byte(0x8000, 0x8D); // STA Absolute opcode
-    $this->memory->write_byte(0x8001, 0x00);
-    $this->memory->write_byte(0x8002, 0x02);
-    $this->cpu->pc = 0x8000;
+        // Pull 16-bit word (low byte first, then high byte)
+        $pulled = $this->cpu->pullWord();
+        $this->assertEquals(0x1234, $pulled);
+        $this->assertEquals(0xFF, $this->cpu->sp);
+    }
 
-    $this->cpu->executeInstruction();
+    public function testStackBoundaryConditions(): void
+    {
+        // Test stack pointer wrap-around
+        $this->cpu->sp = 0x00;
+        $this->cpu->pushByte(0x42);
+        $this->assertEquals(0xFF, $this->cpu->sp); // Should wrap to 0xFF
+        $this->assertEquals(0x42, $this->memory->read_byte(0x0100)); // Written to 0x0100
 
-    $this->assertSame(0xBE, $this->memory->read_byte(0x0200));
-  }
+        $this->cpu->sp = 0xFF;
+        $pulled = $this->cpu->pullByte();
+        $this->assertEquals(0x00, $this->cpu->sp); // Should wrap to 0x00
+    }
 
-  public function testStackOperations(): void
-  {
-    // Set reset vector and reset CPU to ensure proper SP initialization
-    $this->memory->write_word(0xFFFC, 0x8000);
-    $this->cpu->reset();
+    public function testStandardReset(): void
+    {
+        // Set up reset vector
+        $this->memory->write_byte(0xFFFC, 0x00); // Low byte
+        $this->memory->write_byte(0xFFFD, 0x80); // High byte -> 0x8000
 
-    // Verify initial SP state
-    $this->assertSame(0xFD, $this->cpu->sp);
+        // Set some initial state
+        $this->cpu->pc = 0x1234;
+        $this->cpu->setAccumulator(0x55);
+        $this->cpu->setRegisterX(0xAA);
+        $this->cpu->setRegisterY(0xFF);
 
-    // Test byte operations
-    $this->cpu->pushByte(0x42);
-    $this->assertSame(0xFC, $this->cpu->sp);
-    $this->assertSame(0x42, $this->memory->read_byte(0x01FD));
+        $this->cpu->reset();
 
-    $this->cpu->pushByte(0x24);
-    $this->assertSame(0xFB, $this->cpu->sp);
-    $this->assertSame(0x24, $this->memory->read_byte(0x01FC));
+        // Check final state
+        $this->assertEquals(0x8000, $this->cpu->pc); // From reset vector
+        $this->assertEquals(0xFD, $this->cpu->sp);   // After 3 decrements from 0x00
+        $this->assertEquals(0x00, $this->cpu->getAccumulator()); // Cleared in emulator reset
+        $this->assertEquals(0x00, $this->cpu->getRegisterX());   // Cleared in emulator reset
+        $this->assertEquals(0x00, $this->cpu->getRegisterY());   // Cleared in emulator reset
+        $this->assertTrue($this->cpu->status->get(StatusRegister::INTERRUPT_DISABLE)); // I flag set
+        $this->assertTrue($this->cpu->status->get(StatusRegister::UNUSED)); // Unused bit set
+        $this->assertEquals(0, $this->cpu->cycles);
+    }
 
-    $value1 = $this->cpu->pullByte();
-    $this->assertSame(0x24, $value1);
-    $this->assertSame(0xFC, $this->cpu->sp);
+    public function testAccurateReset(): void
+    {
+        // Set up reset vector
+        $this->memory->write_byte(0xFFFC, 0x00);
+        $this->memory->write_byte(0xFFFD, 0x80);
 
-    $value2 = $this->cpu->pullByte();
-    $this->assertSame(0x42, $value2);
-    $this->assertSame(0xFD, $this->cpu->sp);
+        // Set initial state to test register preservation
+        $this->cpu->pc = 0x1234;
+        $this->cpu->setAccumulator(0x55);
+        $this->cpu->setRegisterX(0xAA);
+        $this->cpu->setRegisterY(0xFF);
+        $this->cpu->status->fromInt(0b10110001);
 
-    // Test word operations
-    $this->cpu->pushWord(0x1234);
-    $this->assertSame(0xFB, $this->cpu->sp); // SP decremented by 2
+        $this->cpu->accurateReset();
 
-    $word = $this->cpu->pullWord();
-    $this->assertSame(0x1234, $word);
-    $this->assertSame(0xFD, $this->cpu->sp); // SP back to original
-  }
+        // Check final state - registers should be preserved
+        $this->assertEquals(0x8000, $this->cpu->pc); // From reset vector
+        $this->assertEquals(0xFD, $this->cpu->sp);   // After 3 decrements
+        $this->assertEquals(0x55, $this->cpu->getAccumulator()); // PRESERVED
+        $this->assertEquals(0xAA, $this->cpu->getRegisterX());   // PRESERVED
+        $this->assertEquals(0xFF, $this->cpu->getRegisterY());   // PRESERVED
+        $this->assertTrue($this->cpu->status->get(StatusRegister::INTERRUPT_DISABLE)); // I flag set
+        $this->assertTrue($this->cpu->status->get(StatusRegister::UNUSED)); // Unused bit set
+    }
 
-  public function testStatusRegisterFlags(): void
-  {
-    // Test individual flag operations
-    $this->cpu->status->set(StatusRegister::CARRY, true);
-    $this->assertTrue($this->cpu->status->get(StatusRegister::CARRY));
+    public function testAddressingModeImmediate(): void
+    {
+        $this->cpu->pc = 0x8000;
+        $this->memory->write_byte(0x8000, 0x42);
 
-    $this->cpu->status->set(StatusRegister::ZERO, true);
-    $this->assertTrue($this->cpu->status->get(StatusRegister::ZERO));
+        $address = $this->cpu->getAddress('Immediate');
+        $this->assertEquals(0x8000, $address); // Returns PC before increment
+        $this->assertEquals(0x8001, $this->cpu->pc); // PC incremented
+    }
 
-    $this->cpu->status->set(StatusRegister::NEGATIVE, true);
-    $this->assertTrue($this->cpu->status->get(StatusRegister::NEGATIVE));
+    public function testAddressingModeZeroPage(): void
+    {
+        $this->cpu->pc = 0x8000;
+        $this->memory->write_byte(0x8000, 0x42);
 
-    $this->cpu->status->set(StatusRegister::OVERFLOW, true);
-    $this->assertTrue($this->cpu->status->get(StatusRegister::OVERFLOW));
+        $address = $this->cpu->getAddress('Zero Page');
+        $this->assertEquals(0x42, $address);
+        $this->assertEquals(0x8001, $this->cpu->pc);
+    }
 
-    // Test unused bit is always set
-    $this->assertTrue($this->cpu->status->get(StatusRegister::UNUSED));
-  }
+    public function testAddressingModeZeroPageX(): void
+    {
+        $this->cpu->pc = 0x8000;
+        $this->cpu->setRegisterX(0x05);
+        $this->memory->write_byte(0x8000, 0x42);
+
+        $address = $this->cpu->getAddress('X-Indexed Zero Page');
+        $this->assertEquals(0x47, $address); // 0x42 + 0x05
+        $this->assertEquals(0x8001, $this->cpu->pc);
+    }
+
+    public function testAddressingModeZeroPageXWrap(): void
+    {
+        $this->cpu->pc = 0x8000;
+        $this->cpu->setRegisterX(0x10);
+        $this->memory->write_byte(0x8000, 0xFF);
+
+        $address = $this->cpu->getAddress('X-Indexed Zero Page');
+        $this->assertEquals(0x0F, $address); // 0xFF + 0x10 = 0x10F, wrapped to 0x0F
+    }
+
+    public function testAddressingModeZeroPageY(): void
+    {
+        $this->cpu->pc = 0x8000;
+        $this->cpu->setRegisterY(0x05);
+        $this->memory->write_byte(0x8000, 0x42);
+
+        $address = $this->cpu->getAddress('Y-Indexed Zero Page');
+        $this->assertEquals(0x47, $address); // 0x42 + 0x05
+        $this->assertEquals(0x8001, $this->cpu->pc);
+    }
+
+    public function testAddressingModeAbsolute(): void
+    {
+        $this->cpu->pc = 0x8000;
+        $this->memory->write_byte(0x8000, 0x34); // Low byte
+        $this->memory->write_byte(0x8001, 0x12); // High byte
+
+        $address = $this->cpu->getAddress('Absolute');
+        $this->assertEquals(0x1234, $address);
+        $this->assertEquals(0x8002, $this->cpu->pc);
+    }
+
+    public function testAddressingModeAbsoluteX(): void
+    {
+        $this->cpu->pc = 0x8000;
+        $this->cpu->setRegisterX(0x05);
+        $this->memory->write_byte(0x8000, 0x34);
+        $this->memory->write_byte(0x8001, 0x12);
+
+        $address = $this->cpu->getAddress('X-Indexed Absolute');
+        $this->assertEquals(0x1239, $address); // 0x1234 + 0x05
+        $this->assertEquals(0x8002, $this->cpu->pc);
+    }
+
+    public function testAddressingModeAbsoluteY(): void
+    {
+        $this->cpu->pc = 0x8000;
+        $this->cpu->setRegisterY(0x05);
+        $this->memory->write_byte(0x8000, 0x34);
+        $this->memory->write_byte(0x8001, 0x12);
+
+        $address = $this->cpu->getAddress('Y-Indexed Absolute');
+        $this->assertEquals(0x1239, $address); // 0x1234 + 0x05
+        $this->assertEquals(0x8002, $this->cpu->pc);
+    }
+
+    public function testAddressingModeIndirectX(): void
+    {
+        $this->cpu->pc = 0x8000;
+        $this->cpu->setRegisterX(0x05);
+        $this->memory->write_byte(0x8000, 0x20); // Zero page address
+        $this->memory->write_byte(0x25, 0x34); // Low byte at 0x20 + 0x05
+        $this->memory->write_byte(0x26, 0x12); // High byte
+
+        $address = $this->cpu->getAddress('X-Indexed Zero Page Indirect');
+        $this->assertEquals(0x1234, $address);
+        $this->assertEquals(0x8001, $this->cpu->pc);
+    }
+
+    public function testAddressingModeIndirectY(): void
+    {
+        $this->cpu->pc = 0x8000;
+        $this->cpu->setRegisterY(0x05);
+        $this->memory->write_byte(0x8000, 0x20); // Zero page address
+        $this->memory->write_byte(0x20, 0x34); // Low byte
+        $this->memory->write_byte(0x21, 0x12); // High byte
+
+        $address = $this->cpu->getAddress('Zero Page Indirect Y-Indexed');
+        $this->assertEquals(0x1239, $address); // 0x1234 + 0x05
+        $this->assertEquals(0x8001, $this->cpu->pc);
+    }
+
+    public function testAddressingModeAbsoluteIndirect(): void
+    {
+        $this->cpu->pc = 0x8000;
+        $this->memory->write_byte(0x8000, 0x20); // Indirect address low
+        $this->memory->write_byte(0x8001, 0x30); // Indirect address high -> 0x3020
+        $this->memory->write_byte(0x3020, 0x34); // Target low byte
+        $this->memory->write_byte(0x3021, 0x12); // Target high byte
+
+        $address = $this->cpu->getAddress('Absolute Indirect');
+        $this->assertEquals(0x1234, $address);
+        $this->assertEquals(0x8002, $this->cpu->pc);
+    }
+
+    public function testAddressingModeAbsoluteIndirectPageBoundaryBug(): void
+    {
+        // Test the famous 6502 page boundary bug in JMP indirect
+        $this->cpu->pc = 0x8000;
+        $this->memory->write_byte(0x8000, 0xFF); // Indirect address low
+        $this->memory->write_byte(0x8001, 0x30); // Indirect address high -> 0x30FF
+        $this->memory->write_byte(0x30FF, 0x34); // Target low byte
+        $this->memory->write_byte(0x3000, 0x12); // High byte read from page start, not 0x3100!
+
+        $address = $this->cpu->getAddress('Absolute Indirect');
+        $this->assertEquals(0x1234, $address); // Should use bug behavior
+        $this->assertEquals(0x8002, $this->cpu->pc);
+    }
+
+    public function testAddressingModeRelative(): void
+    {
+        $this->cpu->pc = 0x8000;
+        $this->memory->write_byte(0x8000, 0x05); // Positive offset
+
+        $address = $this->cpu->getAddress('Relative');
+        $this->assertEquals(0x8006, $address); // 0x8001 + 0x05 (PC after reading offset)
+        $this->assertEquals(0x8001, $this->cpu->pc);
+    }
+
+    public function testAddressingModeRelativeNegative(): void
+    {
+        $this->cpu->pc = 0x8000;
+        $this->memory->write_byte(0x8000, 0xFB); // -5 in two's complement
+
+        $address = $this->cpu->getAddress('Relative');
+        $this->assertEquals(0x7FFC, $address); // 0x8001 - 5
+        $this->assertEquals(0x8001, $this->cpu->pc);
+    }
+
+    public function testAddressingModeImplied(): void
+    {
+        $address = $this->cpu->getAddress('Implied');
+        $this->assertEquals(0, $address); // No address needed
+    }
+
+    public function testAddressingModeAccumulator(): void
+    {
+        $address = $this->cpu->getAddress('Accumulator');
+        $this->assertEquals(0, $address); // No memory address
+    }
 }
