@@ -31,13 +31,13 @@ $memory = new MonitoredMemory($busMonitor);
 
 // Set up memory with example values
 $memory->initialize([
-    0x1234 => 0xEA,  // Some instruction at current PC
-    0x1235 => 0xEA,  // Next instruction
-    0x01FD => 0xAA,  // Stack data
-    0x01FC => 0xBB,  // Stack data
-    0x01FB => 0xCC,  // Stack data
-    0xFFFC => 0x00,  // Reset vector low
-    0xFFFD => 0x80,  // Reset vector high -> 0x8000
+  0x1234 => 0xEA,  // Some instruction at current PC
+  0x1235 => 0xEA,  // Next instruction
+  0x01FD => 0xAA,  // Stack data
+  0x01FC => 0xBB,  // Stack data
+  0x01FB => 0xCC,  // Stack data
+  0xFFFC => 0x00,  // Reset vector low
+  0xFFFD => 0x80,  // Reset vector high -> 0x8000
 ]);
 
 // Simulate the 7-cycle reset sequence
@@ -50,36 +50,63 @@ $sp = 0x00;          // SP starts at 0x00
 // Cycle 1: Read current PC
 $busMonitor->incrementCycle();
 $data = $memory->read_byte($currentPC);
-echo sprintf("%016b    %08b    %04X    R    %02X      1     Read PC (dummy)\n",
-    $currentPC, $data, $currentPC, $data);
+echo sprintf(
+  "%016b    %08b    %04X    R    %02X      1     Read PC (dummy)\n",
+  $currentPC,
+  $data,
+  $currentPC,
+  $data
+);
 
 // Cycle 2: Read PC+1
 $busMonitor->incrementCycle();
 $data = $memory->read_byte($currentPC + 1);
-echo sprintf("%016b    %08b    %04X    R    %02X      2     Read PC+1 (dummy)\n",
-    $currentPC + 1, $data, $currentPC + 1, $data);
+echo sprintf(
+  "%016b    %08b    %04X    R    %02X      2     Read PC+1 (dummy)\n",
+  $currentPC + 1,
+  $data,
+  $currentPC + 1,
+  $data
+);
 
 // Cycles 3-5: Stack reads with SP decrement
 for ($cycle = 3; $cycle <= 5; $cycle++) {
-    $busMonitor->incrementCycle();
-    $sp = ($sp - 1) & 0xFF;  // Decrement SP
-    $stackAddr = 0x0100 + $sp;
-    $data = $memory->read_byte($stackAddr);
-    echo sprintf("%016b    %08b    %04X    R    %02X      %d     Read stack, SP dec to 0x%02X\n",
-        $stackAddr, $data, $stackAddr, $data, $cycle, $sp);
+  $busMonitor->incrementCycle();
+  $sp = ($sp - 1) & 0xFF;  // Decrement SP
+  $stackAddr = 0x0100 + $sp;
+  $data = $memory->read_byte($stackAddr);
+  echo sprintf(
+    "%016b    %08b    %04X    R    %02X      %d     Read stack, SP dec to 0x%02X\n",
+    $stackAddr,
+    $data,
+    $stackAddr,
+    $data,
+    $cycle,
+    $sp
+  );
 }
 
 // Cycle 6: Reset vector low
 $busMonitor->incrementCycle();
 $resetLow = $memory->read_byte(0xFFFC);
-echo sprintf("%016b    %08b    %04X    R    %02X      6     Read reset vector low\n",
-    0xFFFC, $resetLow, 0xFFFC, $resetLow);
+echo sprintf(
+  "%016b    %08b    %04X    R    %02X      6     Read reset vector low\n",
+  0xFFFC,
+  $resetLow,
+  0xFFFC,
+  $resetLow
+);
 
 // Cycle 7: Reset vector high
 $busMonitor->incrementCycle();
 $resetHigh = $memory->read_byte(0xFFFD);
-echo sprintf("%016b    %08b    %04X    R    %02X      7     Read reset vector high\n",
-    0xFFFD, $resetHigh, 0xFFFD, $resetHigh);
+echo sprintf(
+  "%016b    %08b    %04X    R    %02X      7     Read reset vector high\n",
+  0xFFFD,
+  $resetHigh,
+  0xFFFD,
+  $resetHigh
+);
 
 $finalPC = ($resetHigh << 8) | $resetLow;
 
@@ -107,3 +134,4 @@ echo "Our Emulator: Simplified reset just reads reset vector\n\n";
 
 echo "Total bus operations in real reset: 7\n";
 echo "Our current implementation operations: 2 (just reset vector)\n";
+

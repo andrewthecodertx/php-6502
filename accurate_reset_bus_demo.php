@@ -17,39 +17,39 @@ $memory = new MonitoredMemory($busMonitor);
 
 // Set up memory with initial values to see the dummy reads
 $memory->initialize([
-    0x1234 => 0xEA,  // NOP at current PC
-    0x1235 => 0xEA,  // NOP at PC+1
-    0x01FF => 0xAA,  // Stack data
-    0x01FE => 0xBB,  // Stack data
-    0x01FD => 0xCC,  // Stack data
-    0xFFFC => 0x00,  // Reset vector low byte
-    0xFFFD => 0x80,  // Reset vector high byte -> 0x8000
-    0x8000 => 0xA9,  // LDA #$42 at reset location
-    0x8001 => 0x42,
+  0x1234 => 0xEA,  // NOP at current PC
+  0x1235 => 0xEA,  // NOP at PC+1
+  0x01FF => 0xAA,  // Stack data
+  0x01FE => 0xBB,  // Stack data
+  0x01FD => 0xCC,  // Stack data
+  0xFFFC => 0x00,  // Reset vector low byte
+  0xFFFD => 0x80,  // Reset vector high byte -> 0x8000
+  0x8000 => 0xA9,  // LDA #$42 at reset location
+  0x8001 => 0x42,
 ]);
 
 // Create CPU with MonitoredCPU but override reset for clean output
 class AccurateResetCPU extends MonitoredCPU
 {
-    public function reset(): void
-    {
-        echo "=== ACCURATE 6502 7-CYCLE RESET SEQUENCE ===\n";
-        echo "ADDRESS_BUS(16-bit)    DATA_BUS(8-bit)    ADDR_HEX    R/W  DATA_HEX  CYCLE  DESCRIPTION\n";
-        echo "===================    ===============    ========    ===  ========  =====  ===========\n";
+  public function reset(): void
+  {
+    echo "=== ACCURATE 6502 7-CYCLE RESET SEQUENCE ===\n";
+    echo "ADDRESS_BUS(16-bit)    DATA_BUS(8-bit)    ADDR_HEX    R/W  DATA_HEX  CYCLE  DESCRIPTION\n";
+    echo "===================    ===============    ========    ===  ========  =====  ===========\n";
 
-        // Call parent reset which now implements the 7-cycle sequence
-        parent::reset();
-    }
+    // Call parent reset which now implements the 7-cycle sequence
+    parent::reset();
+  }
 
-    public function accurateReset(): void
-    {
-        echo "=== HARDWARE-ACCURATE RESET (registers undefined) ===\n";
-        echo "ADDRESS_BUS(16-bit)    DATA_BUS(8-bit)    ADDR_HEX    R/W  DATA_HEX  CYCLE  DESCRIPTION\n";
-        echo "===================    ===============    ========    ===  ========  =====  ===========\n";
+  public function accurateReset(): void
+  {
+    echo "=== HARDWARE-ACCURATE RESET (registers undefined) ===\n";
+    echo "ADDRESS_BUS(16-bit)    DATA_BUS(8-bit)    ADDR_HEX    R/W  DATA_HEX  CYCLE  DESCRIPTION\n";
+    echo "===================    ===============    ========    ===  ========  =====  ===========\n";
 
-        // Call parent accurate reset
-        parent::accurateReset();
-    }
+    // Call parent accurate reset
+    parent::accurateReset();
+  }
 }
 
 $cpu = new AccurateResetCPU($memory);
@@ -62,8 +62,14 @@ $cpu->setRegisterX(0xAA);
 $cpu->setRegisterY(0xFF);
 
 echo "Initial CPU State (before reset):\n";
-echo sprintf("PC: 0x%04X, SP: 0x%02X, A: 0x%02X, X: 0x%02X, Y: 0x%02X\n\n",
-    $cpu->pc, $cpu->sp, $cpu->getAccumulator(), $cpu->getRegisterX(), $cpu->getRegisterY());
+echo sprintf(
+  "PC: 0x%04X, SP: 0x%02X, A: 0x%02X, X: 0x%02X, Y: 0x%02X\n\n",
+  $cpu->pc,
+  $cpu->sp,
+  $cpu->getAccumulator(),
+  $cpu->getRegisterX(),
+  $cpu->getRegisterY()
+);
 
 // Clear bus monitor and perform accurate reset
 $busMonitor->reset();
@@ -74,31 +80,31 @@ echo "\nBus Activity During Reset:\n";
 $activity = $busMonitor->getBusActivity();
 
 $descriptions = [
-    '0x1234' => 'Read PC (dummy)',
-    '0x1235' => 'Read PC+1 (dummy)',
-    '0x01FF' => 'Read stack, SP dec to 0xFF',
-    '0x01FE' => 'Read stack, SP dec to 0xFE',
-    '0x01FD' => 'Read stack, SP dec to 0xFD',
-    '0xFFFC' => 'Read reset vector low',
-    '0xFFFD' => 'Read reset vector high',
+  '0x1234' => 'Read PC (dummy)',
+  '0x1235' => 'Read PC+1 (dummy)',
+  '0x01FF' => 'Read stack, SP dec to 0xFF',
+  '0x01FE' => 'Read stack, SP dec to 0xFE',
+  '0x01FD' => 'Read stack, SP dec to 0xFD',
+  '0xFFFC' => 'Read reset vector low',
+  '0xFFFD' => 'Read reset vector high',
 ];
 
 $cycle = 1;
 foreach ($activity as $op) {
-    $addrHex = sprintf('0x%04X', $op['address']);
-    $description = $descriptions[$addrHex] ?? 'Unknown';
+  $addrHex = sprintf('0x%04X', $op['address']);
+  $description = $descriptions[$addrHex] ?? 'Unknown';
 
-    echo sprintf(
-        "%016b    %08b    %04X    %s    %02X      %d     %s\n",
-        $op['address'],
-        $op['data'],
-        $op['address'],
-        $op['operation'],
-        $op['data'],
-        $cycle,
-        $description
-    );
-    $cycle++;
+  echo sprintf(
+    "%016b    %08b    %04X    %s    %02X      %d     %s\n",
+    $op['address'],
+    $op['data'],
+    $op['address'],
+    $op['operation'],
+    $op['data'],
+    $cycle,
+    $description
+  );
+  $cycle++;
 }
 
 echo "\nReset Results:\n";
@@ -121,8 +127,13 @@ $cpu->setRegisterY(0xFF);
 $cpu->status->fromInt(0b10110001);
 
 echo "\nBefore accurate reset:\n";
-echo sprintf("A: 0x%02X, X: 0x%02X, Y: 0x%02X, Status: 0b%08b\n",
-    $cpu->getAccumulator(), $cpu->getRegisterX(), $cpu->getRegisterY(), $cpu->status->toInt());
+echo sprintf(
+  "A: 0x%02X, X: 0x%02X, Y: 0x%02X, Status: 0b%08b\n",
+  $cpu->getAccumulator(),
+  $cpu->getRegisterX(),
+  $cpu->getRegisterY(),
+  $cpu->status->toInt()
+);
 
 $busMonitor->reset();
 $cpu->accurateReset();
@@ -139,20 +150,20 @@ echo "\nBus Activity for Accurate Reset:\n";
 $activity2 = $busMonitor->getBusActivity();
 $cycle = 1;
 foreach ($activity2 as $op) {
-    $addrHex = sprintf('0x%04X', $op['address']);
-    $description = $descriptions[$addrHex] ?? 'Unknown';
+  $addrHex = sprintf('0x%04X', $op['address']);
+  $description = $descriptions[$addrHex] ?? 'Unknown';
 
-    echo sprintf(
-        "%016b    %08b    %04X    %s    %02X      %d     %s\n",
-        $op['address'],
-        $op['data'],
-        $op['address'],
-        $op['operation'],
-        $op['data'],
-        $cycle,
-        $description
-    );
-    $cycle++;
+  echo sprintf(
+    "%016b    %08b    %04X    %s    %02X      %d     %s\n",
+    $op['address'],
+    $op['data'],
+    $op['address'],
+    $op['operation'],
+    $op['data'],
+    $cycle,
+    $description
+  );
+  $cycle++;
 }
 
 echo "\n=== RESET SEQUENCE COMPLIANCE ===\n";
