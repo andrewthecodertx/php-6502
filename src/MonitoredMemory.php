@@ -29,7 +29,7 @@ class MonitoredMemory extends Memory
 
   public function read_word(int $addr): int
   {
-    // Read word as two separate byte operations to show both on bus
+    
     $low = $this->read_byte($addr);
     $high = $this->read_byte($addr + 1);
     return ($high << 8) | $low;
@@ -37,7 +37,7 @@ class MonitoredMemory extends Memory
 
   public function write_word(int $addr, int $value): void
   {
-    // Write word as two separate byte operations to show both on bus
+    
     $this->write_byte($addr, $value & 0xFF);
     $this->write_byte($addr + 1, ($value >> 8) & 0xFF);
   }
@@ -47,4 +47,3 @@ class MonitoredMemory extends Memory
     return $this->busMonitor;
   }
 }
-

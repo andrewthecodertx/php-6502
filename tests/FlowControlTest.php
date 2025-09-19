@@ -29,287 +29,287 @@ class FlowControlTest extends TestCase
 
   public function testBEQTaken(): void
   {
-    // Test BEQ when zero flag is set (branch taken)
+    
     $this->cpu->status->set(StatusRegister::ZERO, true);
     $this->cpu->pc = 0x8000;
 
-    $this->memory->write_byte(0x8000, 0xF0); // BEQ opcode
-    $this->memory->write_byte(0x8001, 0x05); // Forward branch +5
+    $this->memory->write_byte(0x8000, 0xF0); 
+    $this->memory->write_byte(0x8001, 0x05); 
 
     $this->executeCompleteInstruction();
 
-    $this->assertEquals(0x8007, $this->cpu->pc); // 0x8002 + 5 = 0x8007
+    $this->assertEquals(0x8007, $this->cpu->pc); 
   }
 
   public function testBEQNotTaken(): void
   {
-    // Test BEQ when zero flag is clear (branch not taken)
+    
     $this->cpu->status->set(StatusRegister::ZERO, false);
     $this->cpu->pc = 0x8000;
 
-    $this->memory->write_byte(0x8000, 0xF0); // BEQ opcode
-    $this->memory->write_byte(0x8001, 0x05); // Forward branch +5
+    $this->memory->write_byte(0x8000, 0xF0); 
+    $this->memory->write_byte(0x8001, 0x05); 
 
     $this->executeCompleteInstruction();
 
-    $this->assertEquals(0x8002, $this->cpu->pc); // No branch, PC = 0x8002
+    $this->assertEquals(0x8002, $this->cpu->pc); 
   }
 
   public function testBNETaken(): void
   {
-    // Test BNE when zero flag is clear (branch taken)
+    
     $this->cpu->status->set(StatusRegister::ZERO, false);
     $this->cpu->pc = 0x8000;
 
-    $this->memory->write_byte(0x8000, 0xD0); // BNE opcode
-    $this->memory->write_byte(0x8001, 0x10); // Forward branch +16
+    $this->memory->write_byte(0x8000, 0xD0); 
+    $this->memory->write_byte(0x8001, 0x10); 
 
     $this->executeCompleteInstruction();
 
-    $this->assertEquals(0x8012, $this->cpu->pc); // 0x8002 + 16 = 0x8012
+    $this->assertEquals(0x8012, $this->cpu->pc); 
   }
 
   public function testBranchBackward(): void
   {
-    // Test backward branch with negative offset
+    
     $this->cpu->status->set(StatusRegister::ZERO, true);
     $this->cpu->pc = 0x8010;
 
-    $this->memory->write_byte(0x8010, 0xF0); // BEQ opcode
-    $this->memory->write_byte(0x8011, 0xF0); // Backward branch -16 (0xF0 = -16 in signed)
+    $this->memory->write_byte(0x8010, 0xF0); 
+    $this->memory->write_byte(0x8011, 0xF0); 
 
     $this->executeCompleteInstruction();
 
-    $this->assertEquals(0x8002, $this->cpu->pc); // 0x8012 - 16 = 0x8002
+    $this->assertEquals(0x8002, $this->cpu->pc); 
   }
 
   public function testBCCCarryClear(): void
   {
-    // Test BCC when carry is clear (branch taken)
+    
     $this->cpu->status->set(StatusRegister::CARRY, false);
     $this->cpu->pc = 0x8000;
 
-    $this->memory->write_byte(0x8000, 0x90); // BCC opcode
-    $this->memory->write_byte(0x8001, 0x08); // Forward branch +8
+    $this->memory->write_byte(0x8000, 0x90); 
+    $this->memory->write_byte(0x8001, 0x08); 
 
     $this->executeCompleteInstruction();
 
-    $this->assertEquals(0x800A, $this->cpu->pc); // 0x8002 + 8 = 0x800A
+    $this->assertEquals(0x800A, $this->cpu->pc); 
   }
 
   public function testBCSCarrySet(): void
   {
-    // Test BCS when carry is set (branch taken)
+    
     $this->cpu->status->set(StatusRegister::CARRY, true);
     $this->cpu->pc = 0x8000;
 
-    $this->memory->write_byte(0x8000, 0xB0); // BCS opcode
-    $this->memory->write_byte(0x8001, 0x0C); // Forward branch +12
+    $this->memory->write_byte(0x8000, 0xB0); 
+    $this->memory->write_byte(0x8001, 0x0C); 
 
     $this->executeCompleteInstruction();
 
-    $this->assertEquals(0x800E, $this->cpu->pc); // 0x8002 + 12 = 0x800E
+    $this->assertEquals(0x800E, $this->cpu->pc); 
   }
 
   public function testBPLPositive(): void
   {
-    // Test BPL when negative flag is clear (positive, branch taken)
+    
     $this->cpu->status->set(StatusRegister::NEGATIVE, false);
     $this->cpu->pc = 0x8000;
 
-    $this->memory->write_byte(0x8000, 0x10); // BPL opcode
-    $this->memory->write_byte(0x8001, 0x04); // Forward branch +4
+    $this->memory->write_byte(0x8000, 0x10); 
+    $this->memory->write_byte(0x8001, 0x04); 
 
     $this->executeCompleteInstruction();
 
-    $this->assertEquals(0x8006, $this->cpu->pc); // 0x8002 + 4 = 0x8006
+    $this->assertEquals(0x8006, $this->cpu->pc); 
   }
 
   public function testBMINegative(): void
   {
-    // Test BMI when negative flag is set (negative, branch taken)
+    
     $this->cpu->status->set(StatusRegister::NEGATIVE, true);
     $this->cpu->pc = 0x8000;
 
-    $this->memory->write_byte(0x8000, 0x30); // BMI opcode
-    $this->memory->write_byte(0x8001, 0x06); // Forward branch +6
+    $this->memory->write_byte(0x8000, 0x30); 
+    $this->memory->write_byte(0x8001, 0x06); 
 
     $this->executeCompleteInstruction();
 
-    $this->assertEquals(0x8008, $this->cpu->pc); // 0x8002 + 6 = 0x8008
+    $this->assertEquals(0x8008, $this->cpu->pc); 
   }
 
   public function testJMPAbsolute(): void
   {
-    // Test JMP absolute
+    
     $this->cpu->pc = 0x8000;
 
-    $this->memory->write_byte(0x8000, 0x4C); // JMP absolute opcode
-    $this->memory->write_byte(0x8001, 0x34); // Target address low byte
-    $this->memory->write_byte(0x8002, 0x12); // Target address high byte
+    $this->memory->write_byte(0x8000, 0x4C); 
+    $this->memory->write_byte(0x8001, 0x34); 
+    $this->memory->write_byte(0x8002, 0x12); 
 
     $this->executeCompleteInstruction();
 
-    $this->assertEquals(0x1234, $this->cpu->pc); // Jump to 0x1234
+    $this->assertEquals(0x1234, $this->cpu->pc); 
   }
 
   public function testJMPIndirect(): void
   {
-    // Test JMP indirect
+    
     $this->cpu->pc = 0x8000;
 
-    // Set up indirect address
-    $this->memory->write_byte(0x8000, 0x6C); // JMP indirect opcode
-    $this->memory->write_byte(0x8001, 0x20); // Indirect address low byte
-    $this->memory->write_byte(0x8002, 0x30); // Indirect address high byte -> 0x3020
+    
+    $this->memory->write_byte(0x8000, 0x6C); 
+    $this->memory->write_byte(0x8001, 0x20); 
+    $this->memory->write_byte(0x8002, 0x30); 
 
-    // Set up target address at indirect location
-    $this->memory->write_byte(0x3020, 0x78); // Target address low byte
-    $this->memory->write_byte(0x3021, 0x56); // Target address high byte -> 0x5678
+    
+    $this->memory->write_byte(0x3020, 0x78); 
+    $this->memory->write_byte(0x3021, 0x56); 
 
     $this->executeCompleteInstruction();
 
-    $this->assertEquals(0x5678, $this->cpu->pc); // Jump to 0x5678
+    $this->assertEquals(0x5678, $this->cpu->pc); 
   }
 
   public function testJSRAndRTS(): void
   {
-    // Test JSR (Jump to Subroutine) and RTS (Return from Subroutine)
+    
     $this->cpu->pc = 0x8000;
-    $this->cpu->sp = 0xFF; // Reset stack pointer
+    $this->cpu->sp = 0xFF; 
 
-    // JSR instruction
-    $this->memory->write_byte(0x8000, 0x20); // JSR opcode
-    $this->memory->write_byte(0x8001, 0x34); // Subroutine address low
-    $this->memory->write_byte(0x8002, 0x12); // Subroutine address high -> 0x1234
+    
+    $this->memory->write_byte(0x8000, 0x20); 
+    $this->memory->write_byte(0x8001, 0x34); 
+    $this->memory->write_byte(0x8002, 0x12); 
 
     $this->executeCompleteInstruction();
 
-    $this->assertEquals(0x1234, $this->cpu->pc); // Jump to subroutine
-    $this->assertEquals(0xFD, $this->cpu->sp); // SP decremented by 2 (word pushed)
+    $this->assertEquals(0x1234, $this->cpu->pc); 
+    $this->assertEquals(0xFD, $this->cpu->sp); 
 
-    // Verify return address on stack (JSR pushes PC+2-1 = PC+1)
+    
     $returnAddr = $this->cpu->pullWord();
-    $this->assertEquals(0x8002, $returnAddr); // Should be address of last byte of JSR
+    $this->assertEquals(0x8002, $returnAddr); 
 
-    // Reset stack for RTS test
+    
     $this->cpu->pushWord(0x8002);
 
-    // RTS instruction
-    $this->memory->write_byte(0x1234, 0x60); // RTS opcode at subroutine
+    
+    $this->memory->write_byte(0x1234, 0x60); 
     $this->cpu->pc = 0x1234;
 
     $this->executeCompleteInstruction();
 
-    $this->assertEquals(0x8003, $this->cpu->pc); // Return to instruction after JSR
-    $this->assertEquals(0xFF, $this->cpu->sp); // SP restored
+    $this->assertEquals(0x8003, $this->cpu->pc); 
+    $this->assertEquals(0xFF, $this->cpu->sp); 
   }
 
   public function testStackOperations(): void
   {
-    // Test PHA and PLA
+    
     $this->cpu->setAccumulator(0x42);
     $this->cpu->sp = 0xFF;
 
-    // PHA - Push Accumulator
-    $this->memory->write_byte(0x8000, 0x48); // PHA opcode
+    
+    $this->memory->write_byte(0x8000, 0x48); 
     $this->cpu->pc = 0x8000;
     $this->executeCompleteInstruction();
 
-    $this->assertEquals(0xFE, $this->cpu->sp); // SP decremented
-    $this->assertEquals(0x42, $this->memory->read_byte(0x01FF)); // Value on stack
+    $this->assertEquals(0xFE, $this->cpu->sp); 
+    $this->assertEquals(0x42, $this->memory->read_byte(0x01FF)); 
 
-    // Change accumulator
+    
     $this->cpu->setAccumulator(0x00);
 
-    // PLA - Pull Accumulator
-    $this->memory->write_byte(0x8001, 0x68); // PLA opcode
+    
+    $this->memory->write_byte(0x8001, 0x68); 
     $this->executeCompleteInstruction();
 
-    $this->assertEquals(0x42, $this->cpu->getAccumulator()); // Restored from stack
-    $this->assertEquals(0xFF, $this->cpu->sp); // SP restored
-    $this->assertFalse($this->cpu->status->get(StatusRegister::ZERO)); // Flags set
+    $this->assertEquals(0x42, $this->cpu->getAccumulator()); 
+    $this->assertEquals(0xFF, $this->cpu->sp); 
+    $this->assertFalse($this->cpu->status->get(StatusRegister::ZERO)); 
     $this->assertFalse($this->cpu->status->get(StatusRegister::NEGATIVE));
   }
 
   public function testPHPAndPLP(): void
   {
-    // Test PHP and PLP
+    
     $this->cpu->sp = 0xFF;
 
-    // Set some flags
+    
     $this->cpu->status->set(StatusRegister::CARRY, true);
     $this->cpu->status->set(StatusRegister::ZERO, true);
     $this->cpu->status->set(StatusRegister::NEGATIVE, false);
 
-    // PHP - Push Processor Status
-    $this->memory->write_byte(0x8000, 0x08); // PHP opcode
+    
+    $this->memory->write_byte(0x8000, 0x08); 
     $this->cpu->pc = 0x8000;
     $this->executeCompleteInstruction();
 
-    $this->assertEquals(0xFE, $this->cpu->sp); // SP decremented
+    $this->assertEquals(0xFE, $this->cpu->sp); 
 
-    // Clear all flags
+    
     $this->cpu->status->set(StatusRegister::CARRY, false);
     $this->cpu->status->set(StatusRegister::ZERO, false);
 
-    // PLP - Pull Processor Status
-    $this->memory->write_byte(0x8001, 0x28); // PLP opcode
+    
+    $this->memory->write_byte(0x8001, 0x28); 
     $this->executeCompleteInstruction();
 
-    $this->assertTrue($this->cpu->status->get(StatusRegister::CARRY)); // Restored
-    $this->assertTrue($this->cpu->status->get(StatusRegister::ZERO)); // Restored
-    $this->assertEquals(0xFF, $this->cpu->sp); // SP restored
+    $this->assertTrue($this->cpu->status->get(StatusRegister::CARRY)); 
+    $this->assertTrue($this->cpu->status->get(StatusRegister::ZERO)); 
+    $this->assertEquals(0xFF, $this->cpu->sp); 
   }
 
   public function testFlagInstructions(): void
   {
-    // Test flag set/clear instructions
+    
 
-    // SEC - Set Carry
-    $this->memory->write_byte(0x8000, 0x38); // SEC opcode
+    
+    $this->memory->write_byte(0x8000, 0x38); 
     $this->cpu->pc = 0x8000;
     $this->executeCompleteInstruction();
     $this->assertTrue($this->cpu->status->get(StatusRegister::CARRY));
 
-    // CLC - Clear Carry
-    $this->memory->write_byte(0x8001, 0x18); // CLC opcode
+    
+    $this->memory->write_byte(0x8001, 0x18); 
     $this->executeCompleteInstruction();
     $this->assertFalse($this->cpu->status->get(StatusRegister::CARRY));
 
-    // SEI - Set Interrupt Disable
-    $this->memory->write_byte(0x8002, 0x78); // SEI opcode
+    
+    $this->memory->write_byte(0x8002, 0x78); 
     $this->executeCompleteInstruction();
     $this->assertTrue($this->cpu->status->get(StatusRegister::INTERRUPT_DISABLE));
 
-    // CLI - Clear Interrupt Disable
-    $this->memory->write_byte(0x8003, 0x58); // CLI opcode
+    
+    $this->memory->write_byte(0x8003, 0x58); 
     $this->executeCompleteInstruction();
     $this->assertFalse($this->cpu->status->get(StatusRegister::INTERRUPT_DISABLE));
   }
 
   public function testSimpleLoop(): void
   {
-    // Test a simple counting loop
+    
     $this->cpu->sp = 0xFF;
 
-    // Set up a simple loop program:
-    // loop:   INX
-    //         CPX #$05
-    //         BNE loop
+    
+    
+    
+    
     $this->memory->initialize([
-      0x8000 => 0xE8,       // INX
+      0x8000 => 0xE8,       
       0x8001 => 0xE0,
-      0x8002 => 0x05, // CPX #$05
+      0x8002 => 0x05, 
       0x8003 => 0xD0,
-      0x8004 => 0xFB, // BNE loop (branch back -5)
+      0x8004 => 0xFB, 
     ]);
 
     $this->cpu->pc = 0x8000;
     $this->cpu->setRegisterX(0x00);
 
-    // Execute the loop
-    $maxIterations = 20; // Safety limit
+    
+    $maxIterations = 20; 
     $iterations = 0;
 
     while ($this->cpu->pc != 0x8005 && $iterations < $maxIterations) {
@@ -317,9 +317,8 @@ class FlowControlTest extends TestCase
       $iterations++;
     }
 
-    $this->assertEquals(0x05, $this->cpu->getRegisterX()); // X should be 5
-    $this->assertEquals(0x8005, $this->cpu->pc); // PC should be past the loop
-    $this->assertTrue($this->cpu->status->get(StatusRegister::ZERO)); // CPX should set zero flag
+    $this->assertEquals(0x05, $this->cpu->getRegisterX()); 
+    $this->assertEquals(0x8005, $this->cpu->pc); 
+    $this->assertTrue($this->cpu->status->get(StatusRegister::ZERO)); 
   }
 }
-

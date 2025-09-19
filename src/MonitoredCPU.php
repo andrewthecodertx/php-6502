@@ -29,13 +29,13 @@ class MonitoredCPU extends CPU
     echo "CYCLE  ADDRESS_BUS       DATA_BUS  ADDR_HEX  OP  DATA_HEX  DESCRIPTION\n";
     echo "-----  ----------------  --------  --------  --  --------  -----------\n";
 
-    // Clear any previous bus activity
+    
     $this->busMonitor->reset();
 
-    // Now perform actual reset with bus monitoring
+    
     parent::reset();
 
-    // Display the actual bus activity that was logged
+    
     $activity = $this->busMonitor->getBusActivity();
     foreach ($activity as $i => $op) {
       $addressBinary = sprintf('%016b', $op['address']);
@@ -43,7 +43,7 @@ class MonitoredCPU extends CPU
       $addressHex = sprintf('%04X', $op['address']);
       $dataHex = sprintf('%02X', $op['data']);
 
-      // Determine description based on cycle
+      
       $description = "";
       switch ($i + 1) {
         case 1:
@@ -134,4 +134,3 @@ class MonitoredCPU extends CPU
     );
   }
 }
-

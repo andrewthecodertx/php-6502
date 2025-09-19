@@ -29,34 +29,34 @@ class MemoryTest extends TestCase
 
   public function testWordOperations(): void
   {
-    // Write 16-bit word (little-endian)
+    
     $this->memory->write_word(0x1000, 0x1234);
 
-    // Read back as bytes to verify little-endian storage
-    $this->assertEquals(0x34, $this->memory->read_byte(0x1000)); // Low byte first
-    $this->assertEquals(0x12, $this->memory->read_byte(0x1001)); // High byte second
+    
+    $this->assertEquals(0x34, $this->memory->read_byte(0x1000)); 
+    $this->assertEquals(0x12, $this->memory->read_byte(0x1001)); 
 
-    // Read back as word
+    
     $this->assertEquals(0x1234, $this->memory->read_word(0x1000));
   }
 
   public function testByteConstraints(): void
   {
-    // Test 8-bit value masking
-    $this->memory->write_byte(0x1000, 0x100); // Should mask to 0x00
+    
+    $this->memory->write_byte(0x1000, 0x100); 
     $this->assertEquals(0x00, $this->memory->read_byte(0x1000));
 
-    $this->memory->write_byte(0x1000, 0xFF); // Should remain 0xFF
+    $this->memory->write_byte(0x1000, 0xFF); 
     $this->assertEquals(0xFF, $this->memory->read_byte(0x1000));
 
-    $this->memory->write_byte(0x1000, 0x1FF); // Should mask to 0xFF
+    $this->memory->write_byte(0x1000, 0x1FF); 
     $this->assertEquals(0xFF, $this->memory->read_byte(0x1000));
   }
 
   public function testAddressConstraints(): void
   {
-    // Test 16-bit address masking
-    $this->memory->write_byte(0x10000, 0x42); // Should mask to 0x0000
+    
+    $this->memory->write_byte(0x10000, 0x42); 
     $this->assertEquals(0x42, $this->memory->read_byte(0x0000));
 
     $this->memory->write_byte(0xFFFF, 0x84);
@@ -65,20 +65,20 @@ class MemoryTest extends TestCase
 
   public function testWordConstraints(): void
   {
-    // Test 16-bit word value masking
-    $this->memory->write_word(0x1000, 0x10000); // Should mask to 0x0000
+    
+    $this->memory->write_word(0x1000, 0x10000); 
     $this->assertEquals(0x0000, $this->memory->read_word(0x1000));
 
-    $this->memory->write_word(0x1000, 0xFFFF); // Should remain 0xFFFF
+    $this->memory->write_word(0x1000, 0xFFFF); 
     $this->assertEquals(0xFFFF, $this->memory->read_word(0x1000));
 
-    $this->memory->write_word(0x1000, 0x1FFFF); // Should mask to 0xFFFF
+    $this->memory->write_word(0x1000, 0x1FFFF); 
     $this->assertEquals(0xFFFF, $this->memory->read_word(0x1000));
   }
 
   public function testZeroPageOperations(): void
   {
-    // Test Zero Page (0x0000-0x00FF)
+    
     for ($addr = 0x00; $addr <= 0xFF; $addr++) {
       $value = $addr & 0xFF;
       $this->memory->write_byte($addr, $value);
@@ -88,7 +88,7 @@ class MemoryTest extends TestCase
 
   public function testStackPageOperations(): void
   {
-    // Test Stack Page (0x0100-0x01FF)
+    
     for ($addr = 0x0100; $addr <= 0x01FF; $addr++) {
       $value = $addr & 0xFF;
       $this->memory->write_byte($addr, $value);
@@ -98,7 +98,7 @@ class MemoryTest extends TestCase
 
   public function testGeneralMemoryOperations(): void
   {
-    // Test various addresses throughout memory
+    
     $testAddresses = [
       0x0200,
       0x1000,
@@ -111,7 +111,7 @@ class MemoryTest extends TestCase
     ];
 
     foreach ($testAddresses as $addr) {
-      $value = ($addr >> 8) & 0xFF; // Use high byte as test value
+      $value = ($addr >> 8) & 0xFF; 
       $this->memory->write_byte($addr, $value);
       $this->assertEquals($value, $this->memory->read_byte($addr));
     }
@@ -119,23 +119,23 @@ class MemoryTest extends TestCase
 
   public function testResetVectorArea(): void
   {
-    // Test reset vector at 0xFFFC/0xFFFD
-    $this->memory->write_byte(0xFFFC, 0x00); // Reset vector low
-    $this->memory->write_byte(0xFFFD, 0x80); // Reset vector high
+    
+    $this->memory->write_byte(0xFFFC, 0x00); 
+    $this->memory->write_byte(0xFFFD, 0x80); 
 
     $this->assertEquals(0x00, $this->memory->read_byte(0xFFFC));
     $this->assertEquals(0x80, $this->memory->read_byte(0xFFFD));
 
-    // Read as word should give 0x8000 (little-endian)
+    
     $this->assertEquals(0x8000, $this->memory->read_word(0xFFFC));
   }
 
   public function testInterruptVectorArea(): void
   {
-    // Test interrupt vectors
-    $this->memory->write_word(0xFFFA, 0x1000); // NMI vector
-    $this->memory->write_word(0xFFFC, 0x8000); // Reset vector
-    $this->memory->write_word(0xFFFE, 0x9000); // IRQ/BRK vector
+    
+    $this->memory->write_word(0xFFFA, 0x1000); 
+    $this->memory->write_word(0xFFFC, 0x8000); 
+    $this->memory->write_word(0xFFFE, 0x9000); 
 
     $this->assertEquals(0x1000, $this->memory->read_word(0xFFFA));
     $this->assertEquals(0x8000, $this->memory->read_word(0xFFFC));
@@ -161,16 +161,16 @@ class MemoryTest extends TestCase
 
   public function testMemoryPersistence(): void
   {
-    // Write data and verify it persists through multiple operations
+    
     $this->memory->write_byte(0x1000, 0x42);
     $this->memory->write_byte(0x1001, 0x84);
     $this->memory->write_word(0x2000, 0x1234);
 
-    // Perform other operations
+    
     $this->memory->write_byte(0x3000, 0xFF);
     $this->memory->read_byte(0x4000);
 
-    // Original data should still be there
+    
     $this->assertEquals(0x42, $this->memory->read_byte(0x1000));
     $this->assertEquals(0x84, $this->memory->read_byte(0x1001));
     $this->assertEquals(0x1234, $this->memory->read_word(0x2000));
@@ -178,13 +178,13 @@ class MemoryTest extends TestCase
 
   public function testMemoryBoundaryConditions(): void
   {
-    // Test reading from uninitialized memory (should return 0)
+    
     $this->assertEquals(0x00, $this->memory->read_byte(0x5000));
     $this->assertEquals(0x0000, $this->memory->read_word(0x5000));
 
-    // Test address boundary conditions
-    $this->memory->write_byte(0x0000, 0x42); // First address
-    $this->memory->write_byte(0xFFFF, 0x84); // Last address
+    
+    $this->memory->write_byte(0x0000, 0x42); 
+    $this->memory->write_byte(0xFFFF, 0x84); 
 
     $this->assertEquals(0x42, $this->memory->read_byte(0x0000));
     $this->assertEquals(0x84, $this->memory->read_byte(0xFFFF));
@@ -192,23 +192,23 @@ class MemoryTest extends TestCase
 
   public function testWordCrossingPageBoundary(): void
   {
-    // Test word operations that cross page boundaries
+    
     $this->memory->write_word(0x00FF, 0x1234);
 
-    // Should be stored as little-endian across page boundary
-    $this->assertEquals(0x34, $this->memory->read_byte(0x00FF)); // Low byte
-    $this->assertEquals(0x12, $this->memory->read_byte(0x0100)); // High byte
+    
+    $this->assertEquals(0x34, $this->memory->read_byte(0x00FF)); 
+    $this->assertEquals(0x12, $this->memory->read_byte(0x0100)); 
 
     $this->assertEquals(0x1234, $this->memory->read_word(0x00FF));
   }
 
   public function testWordAtAddressBoundary(): void
   {
-    // Test word operations at the very end of address space
+    
     $this->memory->write_byte(0xFFFF, 0x42);
-    $this->memory->write_byte(0x0000, 0x84); // Should wrap around
+    $this->memory->write_byte(0x0000, 0x84); 
 
-    // Read word from 0xFFFF should read 0xFFFF and 0x0000 (wrapped)
+    
     $this->memory->write_word(0xFFFF, 0x1234);
     $this->assertEquals(0x34, $this->memory->read_byte(0xFFFF));
     $this->assertEquals(0x12, $this->memory->read_byte(0x0000));
@@ -216,7 +216,7 @@ class MemoryTest extends TestCase
 
   public function testLargeDataOperations(): void
   {
-    // Test operations with larger datasets
+    
     $data = [];
     for ($i = 0; $i < 256; $i++) {
       $addr = 0x2000 + $i;
@@ -226,7 +226,7 @@ class MemoryTest extends TestCase
 
     $this->memory->initialize($data);
 
-    // Verify all data was written correctly
+    
     for ($i = 0; $i < 256; $i++) {
       $addr = 0x2000 + $i;
       $this->assertEquals($i, $this->memory->read_byte($addr));

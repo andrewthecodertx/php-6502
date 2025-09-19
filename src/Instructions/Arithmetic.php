@@ -21,12 +21,12 @@ class Arithmetic
 
     $result = $accumulator + $value + $carry;
 
-    // Set flags
+    
     $this->cpu->status->set(StatusRegister::CARRY, $result > 0xFF);
     $this->cpu->status->set(StatusRegister::ZERO, ($result & 0xFF) === 0);
     $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);
 
-    // Overflow flag: set if sign of inputs same but different from result
+    
     $overflow = ((($accumulator ^ $result) & ($value ^ $result)) & 0x80) !== 0;
     $this->cpu->status->set(StatusRegister::OVERFLOW, $overflow);
 
@@ -42,15 +42,15 @@ class Arithmetic
     $accumulator = $this->cpu->getAccumulator();
     $carry = $this->cpu->status->get(StatusRegister::CARRY) ? 1 : 0;
 
-    // SBC is addition with one's complement of value
+    
     $result = $accumulator - $value - (1 - $carry);
 
-    // Set flags
+    
     $this->cpu->status->set(StatusRegister::CARRY, $result >= 0);
     $this->cpu->status->set(StatusRegister::ZERO, ($result & 0xFF) === 0);
     $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);
 
-    // Overflow flag for subtraction
+    
     $overflow = ((($accumulator ^ $value) & ($accumulator ^ $result)) & 0x80) !== 0;
     $this->cpu->status->set(StatusRegister::OVERFLOW, $overflow);
 
@@ -67,7 +67,7 @@ class Arithmetic
 
     $result = $accumulator - $value;
 
-    // Set flags (like SBC but don't store result)
+    
     $this->cpu->status->set(StatusRegister::CARRY, $result >= 0);
     $this->cpu->status->set(StatusRegister::ZERO, ($result & 0xFF) === 0);
     $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);
@@ -83,7 +83,7 @@ class Arithmetic
 
     $result = $registerX - $value;
 
-    // Set flags
+    
     $this->cpu->status->set(StatusRegister::CARRY, $result >= 0);
     $this->cpu->status->set(StatusRegister::ZERO, ($result & 0xFF) === 0);
     $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);
@@ -99,7 +99,7 @@ class Arithmetic
 
     $result = $registerY - $value;
 
-    // Set flags
+    
     $this->cpu->status->set(StatusRegister::CARRY, $result >= 0);
     $this->cpu->status->set(StatusRegister::ZERO, ($result & 0xFF) === 0);
     $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);

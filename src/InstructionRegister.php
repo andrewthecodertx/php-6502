@@ -6,7 +6,7 @@ namespace Emulator;
 
 class InstructionRegister
 {
-  /** @var array<string, Opcode> */
+  
   private array $opcodes = [];
 
   public function __construct()

@@ -18,7 +18,7 @@ class IOMemory extends Memory
   {
     $addr = $addr & 0xFFFF;
 
-    // Handle console I/O reads
+    
     switch ($addr) {
       case ConsoleIO::CONSOLE_INPUT_STATUS:
         return $this->console->getInputStatus();
@@ -35,7 +35,7 @@ class IOMemory extends Memory
   {
     $addr = $addr & 0xFFFF;
 
-    // Handle console I/O writes
+    
     switch ($addr) {
       case ConsoleIO::CONSOLE_OUTPUT:
         $this->console->writeCharacter($value);

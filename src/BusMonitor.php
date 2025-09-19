@@ -15,7 +15,7 @@ class BusMonitor
       'cycle' => $this->cycleCount,
       'address' => $address & 0xFFFF,
       'data' => $data & 0xFF,
-      'operation' => $operation, // 'R' for read, 'W' for write
+      'operation' => $operation, 
     ];
   }
 
@@ -68,4 +68,3 @@ class BusMonitor
     return end($this->busActivity) ?: null;
   }
 }
-

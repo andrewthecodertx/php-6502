@@ -15,7 +15,7 @@ class ConsoleIO
 
   public function __construct()
   {
-    // Set non-blocking mode for stdin if running in CLI
+    
     if (php_sapi_name() === 'cli') {
       stream_set_blocking(STDIN, false);
     }
@@ -23,20 +23,20 @@ class ConsoleIO
 
   public function writeCharacter(int $character): void
   {
-    $char = chr($character & 0x7F); // Mask to 7-bit ASCII
+    $char = chr($character & 0x7F); 
 
-    // Handle special characters
+    
     switch ($character) {
-      case 0x0A: // Line feed
+      case 0x0A: 
         echo "\n";
         break;
-      case 0x0D: // Carriage return
+      case 0x0D: 
         echo "\r";
         break;
-      case 0x08: // Backspace
+      case 0x08: 
         echo "\b";
         break;
-      case 0x07: // Bell
+      case 0x07: 
         echo "\a";
         break;
       default:
@@ -46,7 +46,7 @@ class ConsoleIO
         break;
     }
 
-    // Flush output immediately for interactive experience
+    
     if (ob_get_level()) {
       ob_flush();
     }
@@ -56,7 +56,7 @@ class ConsoleIO
   public function getInputStatus(): int
   {
     $this->checkForInput();
-    return $this->inputReady ? 0x80 : 0x00; // Bit 7 set when character available
+    return $this->inputReady ? 0x80 : 0x00; 
   }
 
   public function readCharacter(): int
@@ -69,7 +69,7 @@ class ConsoleIO
       return ord($char);
     }
 
-    return 0x00; // No character available
+    return 0x00; 
   }
 
   private function checkForInput(): void
@@ -77,7 +77,7 @@ class ConsoleIO
     if (php_sapi_name() === 'cli') {
       $input = fread(STDIN, 1024);
       if ($input !== false && $input !== '') {
-        // Add characters to buffer
+        
         for ($i = 0; $i < strlen($input); $i++) {
           $this->inputBuffer[] = $input[$i];
         }

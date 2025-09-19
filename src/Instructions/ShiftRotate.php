@@ -31,7 +31,7 @@ class ShiftRotate
       $this->cpu->getMemory()->write_byte($address, $result & 0xFF);
     }
 
-    // Set flags
+    
     $this->cpu->status->set(StatusRegister::ZERO, ($result & 0xFF) === 0);
     $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);
 
@@ -57,9 +57,9 @@ class ShiftRotate
       $this->cpu->getMemory()->write_byte($address, $result);
     }
 
-    // Set flags
+    
     $this->cpu->status->set(StatusRegister::ZERO, $result === 0);
-    $this->cpu->status->set(StatusRegister::NEGATIVE, false); // MSB always 0 after LSR
+    $this->cpu->status->set(StatusRegister::NEGATIVE, false); 
 
     return $opcode->getCycles();
   }
@@ -84,7 +84,7 @@ class ShiftRotate
       $this->cpu->getMemory()->write_byte($address, $result & 0xFF);
     }
 
-    // Set flags
+    
     $this->cpu->status->set(StatusRegister::ZERO, ($result & 0xFF) === 0);
     $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);
 
@@ -111,7 +111,7 @@ class ShiftRotate
       $this->cpu->getMemory()->write_byte($address, $result);
     }
 
-    // Set flags
+    
     $this->cpu->status->set(StatusRegister::ZERO, $result === 0);
     $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);
 

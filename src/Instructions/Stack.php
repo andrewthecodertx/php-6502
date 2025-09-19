@@ -23,7 +23,7 @@ class Stack
     $value = $this->cpu->pullByte();
     $this->cpu->setAccumulator($value);
 
-    // Set flags based on pulled value
+    
     $this->cpu->status->set(StatusRegister::ZERO, $value === 0);
     $this->cpu->status->set(StatusRegister::NEGATIVE, ($value & 0x80) !== 0);
 
@@ -32,7 +32,7 @@ class Stack
 
   public function php(Opcode $opcode): int
   {
-    // Push status register with B flag set (6502 behavior)
+    
     $status = $this->cpu->status->toInt() | (1 << StatusRegister::BREAK_COMMAND);
     $this->cpu->pushByte($status);
     return $opcode->getCycles();
@@ -41,7 +41,7 @@ class Stack
   public function plp(Opcode $opcode): int
   {
     $status = $this->cpu->pullByte();
-    // Clear B flag and ensure unused bit is set (6502 behavior)
+    
     $status &= ~(1 << StatusRegister::BREAK_COMMAND);
     $status |= (1 << StatusRegister::UNUSED);
     $this->cpu->status->fromInt($status);

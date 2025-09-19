@@ -31,7 +31,7 @@ class BusMonitorTest extends TestCase
   public function testMemoryReadMonitoring(): void
   {
     $this->memory->write_byte(0x1000, 0x42);
-    $this->busMonitor->reset(); // Clear write activity
+    $this->busMonitor->reset(); 
 
     $value = $this->memory->read_byte(0x1000);
     $this->assertEquals(0x42, $value);
@@ -68,7 +68,7 @@ class BusMonitorTest extends TestCase
     $activity = $this->busMonitor->getBusActivity();
     $this->assertCount(4, $activity);
 
-    // Check write operations
+    
     $this->assertEquals('W', $activity[0]['operation']);
     $this->assertEquals(0x1000, $activity[0]['address']);
     $this->assertEquals(0x42, $activity[0]['data']);
@@ -77,7 +77,7 @@ class BusMonitorTest extends TestCase
     $this->assertEquals(0x1001, $activity[1]['address']);
     $this->assertEquals(0x84, $activity[1]['data']);
 
-    // Check read operations
+    
     $this->assertEquals('R', $activity[2]['operation']);
     $this->assertEquals(0x1000, $activity[2]['address']);
     $this->assertEquals(0x42, $activity[2]['data']);
@@ -92,16 +92,16 @@ class BusMonitorTest extends TestCase
     $this->memory->write_word(0x1000, 0x1234);
 
     $activity = $this->busMonitor->getBusActivity();
-    $this->assertCount(2, $activity); // Word write = 2 byte operations
+    $this->assertCount(2, $activity); 
 
-    // Little-endian: low byte first, high byte second
+    
     $this->assertEquals('W', $activity[0]['operation']);
     $this->assertEquals(0x1000, $activity[0]['address']);
-    $this->assertEquals(0x34, $activity[0]['data']); // Low byte
+    $this->assertEquals(0x34, $activity[0]['data']); 
 
     $this->assertEquals('W', $activity[1]['operation']);
     $this->assertEquals(0x1001, $activity[1]['address']);
-    $this->assertEquals(0x12, $activity[1]['data']); // High byte
+    $this->assertEquals(0x12, $activity[1]['data']); 
   }
 
   public function testBusMonitorReset(): void
@@ -148,26 +148,26 @@ class BusMonitorTest extends TestCase
   {
     $cpu = new MonitoredCPU($this->memory);
 
-    // Set up reset vector
+    
     $this->memory->write_byte(0xFFFC, 0x00);
     $this->memory->write_byte(0xFFFD, 0x80);
 
     $this->busMonitor->reset();
-    $cpu->reset(); // This should generate 7 bus operations
+    $cpu->reset(); 
 
     $activity = $this->busMonitor->getBusActivity();
-    $this->assertEquals(7, count($activity)); // Exactly 7 operations for reset
+    $this->assertEquals(7, count($activity)); 
 
-    // Verify reset sequence pattern
-    $this->assertEquals('R', $activity[0]['operation']); // Dummy read PC
-    $this->assertEquals('R', $activity[1]['operation']); // Dummy read PC+1
-    $this->assertEquals('R', $activity[2]['operation']); // Stack read 1
-    $this->assertEquals('R', $activity[3]['operation']); // Stack read 2
-    $this->assertEquals('R', $activity[4]['operation']); // Stack read 3
-    $this->assertEquals('R', $activity[5]['operation']); // Reset vector low
-    $this->assertEquals('R', $activity[6]['operation']); // Reset vector high
+    
+    $this->assertEquals('R', $activity[0]['operation']); 
+    $this->assertEquals('R', $activity[1]['operation']); 
+    $this->assertEquals('R', $activity[2]['operation']); 
+    $this->assertEquals('R', $activity[3]['operation']); 
+    $this->assertEquals('R', $activity[4]['operation']); 
+    $this->assertEquals('R', $activity[5]['operation']); 
+    $this->assertEquals('R', $activity[6]['operation']); 
 
-    // Check reset vector reads
+    
     $this->assertEquals(0xFFFC, $activity[5]['address']);
     $this->assertEquals(0x00, $activity[5]['data']);
     $this->assertEquals(0xFFFD, $activity[6]['address']);
@@ -181,16 +181,16 @@ class BusMonitorTest extends TestCase
 
     $this->busMonitor->reset();
 
-    // Push operations
+    
     $cpu->pushByte(0x42);
     $cpu->pushByte(0x84);
 
     $activity = $this->busMonitor->getBusActivity();
     $this->assertCount(2, $activity);
 
-    // Verify stack writes
+    
     $this->assertEquals('W', $activity[0]['operation']);
-    $this->assertEquals(0x01FF, $activity[0]['address']); // Stack page
+    $this->assertEquals(0x01FF, $activity[0]['address']); 
     $this->assertEquals(0x42, $activity[0]['data']);
 
     $this->assertEquals('W', $activity[1]['operation']);
@@ -199,14 +199,14 @@ class BusMonitorTest extends TestCase
 
     $this->busMonitor->reset();
 
-    // Pull operations
+    
     $value1 = $cpu->pullByte();
     $value2 = $cpu->pullByte();
 
     $activity = $this->busMonitor->getBusActivity();
     $this->assertCount(2, $activity);
 
-    // Verify stack reads (LIFO order)
+    
     $this->assertEquals('R', $activity[0]['operation']);
     $this->assertEquals(0x01FE, $activity[0]['address']);
     $this->assertEquals(0x84, $activity[0]['data']);
@@ -220,7 +220,7 @@ class BusMonitorTest extends TestCase
 
   public function testZeroPageOperationsMonitoring(): void
   {
-    // Test Zero Page operations (0x0000-0x00FF)
+    
     $this->memory->write_byte(0x00, 0x11);
     $this->memory->write_byte(0x80, 0x22);
     $this->memory->write_byte(0xFF, 0x33);
@@ -244,7 +244,7 @@ class BusMonitorTest extends TestCase
 
   public function testHighMemoryOperationsMonitoring(): void
   {
-    // Test high memory operations
+    
     $this->memory->write_byte(0xFFFE, 0xAA);
     $this->memory->write_byte(0xFFFF, 0xBB);
 
@@ -264,7 +264,7 @@ class BusMonitorTest extends TestCase
 
   public function testActivityDataIntegrity(): void
   {
-    // Test that bus activity data maintains integrity
+    
     $testData = [
       [0x1000, 0x42, 'W'],
       [0x2000, 0x84, 'R'],

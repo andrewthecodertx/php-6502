@@ -4,7 +4,7 @@ require_once 'vendor/autoload.php';
 
 use Emulator\Assembler\Assembler;
 use Emulator\Memory;
-use Emulator\EnhancedCPU;
+use Emulator\CPU;
 use Emulator\Bus\SystemBus;
 use Emulator\Peripherals\TextDisplay;
 use Emulator\Peripherals\SoundController;
@@ -39,7 +39,6 @@ function assembleFile(string $inputFile, ?string $outputFile = null): array
     echo "Labels found: " . count($labels) . "\n";
 
     if ($outputFile) {
-      // Save binary file
       $data = '';
       $minAddr = min(array_keys($program));
       $maxAddr = max(array_keys($program));
@@ -53,7 +52,6 @@ function assembleFile(string $inputFile, ?string $outputFile = null): array
     }
 
     return $program;
-
   } catch (Exception $e) {
     echo "Assembly failed: " . $e->getMessage() . "\n";
     exit(1);
@@ -66,7 +64,6 @@ function runProgram(string $inputFile): void
 
   echo "\nCreating enhanced 6502 system...\n";
 
-  // Create system
   $memory = new Memory();
   $bus = new SystemBus($memory);
 
@@ -78,14 +75,12 @@ function runProgram(string $inputFile): void
   $bus->addPeripheral($sound);
   $bus->addPeripheral($console);
 
-  $cpu = new EnhancedCPU($bus);
+  $cpu = new CPU($bus);
 
-  // Load program
   foreach ($program as $addr => $byte) {
     $memory->write_byte($addr, $byte);
   }
 
-  // Set reset vector if program doesn't specify one
   if (!isset($program[0xFFFC]) && !isset($program[0xFFFD])) {
     $startAddr = min(array_keys($program));
     $memory->write_byte(0xFFFC, $startAddr & 0xFF);
@@ -93,7 +88,10 @@ function runProgram(string $inputFile): void
     echo "Set reset vector to: 0x" . sprintf('%04X', $startAddr) . "\n";
   }
 
-  echo "Running program...\n\n";
+  echo "Running program...\n";
+  echo "Press 'q' + Enter to quit\n\n";
+
+  stream_set_blocking(STDIN, false);
 
   $cpu->reset();
 
@@ -102,27 +100,31 @@ function runProgram(string $inputFile): void
     $lastRefresh = microtime(true);
 
     while ($instructionCount < 100000) {
+      $input = fread(STDIN, 1024);
+      if ($input !== false && trim(strtolower($input)) === 'q') {
+        echo "\nQuitting...\n";
+        break;
+      }
+
       $cpu->executeInstruction();
       $instructionCount++;
 
-      // Refresh display periodically
       $now = microtime(true);
-      if ($now - $lastRefresh > 0.1) {
+      if ($now - $lastRefresh > 0.05) {
         $console->refresh();
         $lastRefresh = $now;
-        echo "\rInstructions: $instructionCount | PC: 0x" . sprintf('%04X', $cpu->pc);
-        flush();
       }
 
-      usleep(1000); // 1ms delay
+      usleep(100);
     }
 
     echo "\nProgram completed (instruction limit reached)\n";
-
   } catch (Exception $e) {
     echo "\nProgram error: " . $e->getMessage() . "\n";
     echo "PC: 0x" . sprintf('%04X', $cpu->pc) . "\n";
   }
+
+  stream_set_blocking(STDIN, true);
 
   $console->refresh();
 }
@@ -168,14 +170,12 @@ function showLabels(string $inputFile): void
     foreach ($labels as $label => $address) {
       echo sprintf("%-20s = $%04X (%d)\n", $label, $address, $address);
     }
-
   } catch (Exception $e) {
     echo "Error: " . $e->getMessage() . "\n";
     exit(1);
   }
 }
 
-// Main CLI logic
 if ($argc < 2) {
   showUsage();
   exit(1);

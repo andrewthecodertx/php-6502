@@ -19,12 +19,12 @@ class Memory
 
   public function __construct()
   {
-    // No need to pre-allocate memory - use lazy allocation
+    
   }
 
   public function initialize(array $rom = []): void
   {
-    // Only set specific ROM data, don't pre-allocate entire memory space
+    
     foreach ($rom as $addr => $value) {
       $this->memory[$addr] = $value & 0xFF;
     }
@@ -32,23 +32,23 @@ class Memory
 
   public function read_byte(int $addr): int
   {
-    $addr = $addr & 0xFFFF; // Ensure 16-bit address space
+    $addr = $addr & 0xFFFF; 
     if ($addr >= self::ZERO_PAGE_START && $addr <= self::FREE_MEMORY_END) {
-      return $this->memory[$addr] ?? 0; // Return 0 for uninitialized memory
+      return $this->memory[$addr] ?? 0; 
     }
 
-    //TODO throw an exception for or log for out-of-bounds access
+    
 
     return 0;
   }
 
   public function write_byte(int $addr, int $value): void
   {
-    $addr = $addr & 0xFFFF; // Ensure 16-bit address space
+    $addr = $addr & 0xFFFF; 
     if ($addr >= self::ZERO_PAGE_START && $addr <= self::FREE_MEMORY_END) {
-      $this->memory[$addr] = $value & 0xFF; // Ensure 8-bit values
+      $this->memory[$addr] = $value & 0xFF; 
     }
-    // Consider throwing an exception or logging for out-of-bounds write
+    
   }
 
   public function read_word(int $addr): int
@@ -62,7 +62,7 @@ class Memory
     $this->write_byte($addr + 1, ($value >> 8) & 0xFF);
   }
 
-  // Stack operations for convenience
+  
   public function push(int $value, &$stack_pointer): void
   {
     $this->write_byte(self::STACK_START + $stack_pointer--, $value);

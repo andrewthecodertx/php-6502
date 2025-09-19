@@ -13,11 +13,12 @@ use Emulator\Instructions\IncDec;
 use Emulator\Instructions\FlowControl;
 use Emulator\Instructions\Stack;
 use Emulator\Instructions\Flags;
+use Emulator\Bus\BusInterface;
 
 class CPU
 {
   public int $pc = 0;
-  public int $sp = 0; // 8-bit stack pointer (0x00-0xFF)
+  public int $sp = 0;
   public int $accumulator = 0;
   public int $register_x = 0;
   public int $register_y = 0;
@@ -36,8 +37,18 @@ class CPU
   private Stack $stackHandler;
   private Flags $flagsHandler;
 
-  public function __construct(private Memory $memory)
+  private Memory $memory;
+  private ?BusInterface $bus = null;
+
+  public function __construct(Memory|BusInterface $memoryOrBus)
   {
+    if ($memoryOrBus instanceof BusInterface) {
+      $this->bus = $memoryOrBus;
+      $this->memory = new BusMemoryBridge($memoryOrBus);
+    } else {
+      $this->memory = $memoryOrBus;
+    }
+
     $this->status = new StatusRegister();
     $this->instructionRegister = new InstructionRegister();
     $this->loadStoreHandler = new LoadStore($this);
@@ -87,6 +98,10 @@ class CPU
       $this->cycles += $handler($opcodeData);
     }
     $this->clock();
+
+    if ($this->bus !== null) {
+      $this->bus->tick();
+    }
   }
 
   public function executeInstruction(): void
@@ -99,87 +114,49 @@ class CPU
 
   public function reset(): void
   {
-    // 6502 reset sequence takes exactly 7 cycles with specific bus activity
-
-    // Store current PC for dummy reads (cycles 1-2)
     $currentPC = $this->pc;
-
-    // Cycle 1: Read current PC location (dummy read, ignored)
     $this->memory->read_byte($currentPC);
-
-    // Cycle 2: Read current PC+1 location (dummy read, ignored)
     $this->memory->read_byte($currentPC + 1);
 
-    // Cycles 3-5: Read stack locations while decrementing SP (dummy reads)
-    // Note: SP starts at unknown value, we'll simulate starting from 0x00
     $tempSP = 0x00;
-    for ($cycle = 3; $cycle <= 5; $cycle++) {
-      $tempSP = ($tempSP - 1) & 0xFF; // Decrement SP
-      $this->memory->read_byte(0x0100 + $tempSP); // Dummy stack read
-    }
-
-    // Cycle 6: Read reset vector low byte
-    $resetLow = $this->memory->read_byte(0xFFFC);
-
-    // Cycle 7: Read reset vector high byte and load PC
-    $resetHigh = $this->memory->read_byte(0xFFFD);
-
-    // Set final CPU state per 6502 specification
-    $this->pc = ($resetHigh << 8) | $resetLow;
-    $this->sp = 0xFD; // SP after 3 decrements from 0x00
-
-    // 6502 specification: Only I flag is guaranteed set, others undefined
-    // For emulation consistency, we'll set known state but note this difference
-    // Real hardware: A, X, Y retain previous values (undefined)
-    // Real hardware: Only I flag guaranteed set, other flags undefined
-    $this->accumulator = 0; // Emulator choice: clear (real HW: undefined)
-    $this->register_x = 0;  // Emulator choice: clear (real HW: undefined)
-    $this->register_y = 0;  // Emulator choice: clear (real HW: undefined)
-
-    // Set status register: only I flag guaranteed, others undefined
-    // We'll set unused bit and I flag for emulation consistency
-    $this->status->fromInt(0b00100100); // I flag + unused bit set
-
-    $this->cycles = 0;
-  }
-
-  public function accurateReset(): void
-  {
-    // 6502 reset sequence with hardware-accurate undefined register behavior
-    // This version leaves A, X, Y registers unchanged (as real hardware does)
-
-    $currentPC = $this->pc;
-
-    // Cycle 1: Read current PC location (dummy read, ignored)
-    $this->memory->read_byte($currentPC);
-
-    // Cycle 2: Read current PC+1 location (dummy read, ignored)
-    $this->memory->read_byte($currentPC + 1);
-
-    // Cycles 3-5: Read stack locations while decrementing SP (dummy reads)
-    $tempSP = 0x00; // Simulate starting SP (real hardware: undefined)
     for ($cycle = 3; $cycle <= 5; $cycle++) {
       $tempSP = ($tempSP - 1) & 0xFF;
       $this->memory->read_byte(0x0100 + $tempSP);
     }
 
-    // Cycle 6: Read reset vector low byte
     $resetLow = $this->memory->read_byte(0xFFFC);
-
-    // Cycle 7: Read reset vector high byte and load PC
     $resetHigh = $this->memory->read_byte(0xFFFD);
 
-    // Set final CPU state exactly per 6502 specification
     $this->pc = ($resetHigh << 8) | $resetLow;
     $this->sp = 0xFD;
+    $this->accumulator = 0;
+    $this->register_x = 0;
+    $this->register_y = 0;
+    $this->status->fromInt(0b00100100);
+    $this->cycles = 0;
+  }
 
-    // Hardware-accurate behavior: A, X, Y registers are NOT modified
-    // (they retain whatever values they had before reset)
+  public function accurateReset(): void
+  {
+    $currentPC = $this->pc;
 
-    // Only set I flag, leave other flags in undefined state
-    // For practical emulation, we'll preserve current flags but ensure I is set
+    $this->memory->read_byte($currentPC);
+    $this->memory->read_byte($currentPC + 1);
+
+    $tempSP = 0x00;
+
+    for ($cycle = 3; $cycle <= 5; $cycle++) {
+      $tempSP = ($tempSP - 1) & 0xFF;
+      $this->memory->read_byte(0x0100 + $tempSP);
+    }
+
+    $resetLow = $this->memory->read_byte(0xFFFC);
+    $resetHigh = $this->memory->read_byte(0xFFFD);
+
+    $this->pc = ($resetHigh << 8) | $resetLow;
+    $this->sp = 0xFD;
     $this->status->set(StatusRegister::INTERRUPT_DISABLE, true);
-    $this->status->set(StatusRegister::UNUSED, true); // Always set per spec
+    $this->status->set(StatusRegister::UNUSED, true);
 
     $this->cycles = 0;
   }
@@ -187,7 +164,6 @@ class CPU
   private function initializeInstructionHandlers(): void
   {
     $this->instructionHandlers = [
-      // Load/Store Operations
       'LDA' => fn(Opcode $opcode) => $this->loadStoreHandler->lda($opcode),
       'LDX' => fn(Opcode $opcode) => $this->loadStoreHandler->ldx($opcode),
       'LDY' => fn(Opcode $opcode) => $this->loadStoreHandler->ldy($opcode),
@@ -195,7 +171,6 @@ class CPU
       'STX' => fn(Opcode $opcode) => $this->loadStoreHandler->stx($opcode),
       'STY' => fn(Opcode $opcode) => $this->loadStoreHandler->sty($opcode),
 
-      // Register Transfers
       'TAX' => fn(Opcode $opcode) => $this->transferHandler->tax($opcode),
       'TAY' => fn(Opcode $opcode) => $this->transferHandler->tay($opcode),
       'TXA' => fn(Opcode $opcode) => $this->transferHandler->txa($opcode),
@@ -203,26 +178,22 @@ class CPU
       'TSX' => fn(Opcode $opcode) => $this->transferHandler->tsx($opcode),
       'TXS' => fn(Opcode $opcode) => $this->transferHandler->txs($opcode),
 
-      // Arithmetic Operations
       'ADC' => fn(Opcode $opcode) => $this->arithmeticHandler->adc($opcode),
       'SBC' => fn(Opcode $opcode) => $this->arithmeticHandler->sbc($opcode),
       'CMP' => fn(Opcode $opcode) => $this->arithmeticHandler->cmp($opcode),
       'CPX' => fn(Opcode $opcode) => $this->arithmeticHandler->cpx($opcode),
       'CPY' => fn(Opcode $opcode) => $this->arithmeticHandler->cpy($opcode),
 
-      // Logic Operations
       'AND' => fn(Opcode $opcode) => $this->logicHandler->and($opcode),
       'ORA' => fn(Opcode $opcode) => $this->logicHandler->ora($opcode),
       'EOR' => fn(Opcode $opcode) => $this->logicHandler->eor($opcode),
       'BIT' => fn(Opcode $opcode) => $this->logicHandler->bit($opcode),
 
-      // Shift/Rotate Operations
       'ASL' => fn(Opcode $opcode) => $this->shiftRotateHandler->asl($opcode),
       'LSR' => fn(Opcode $opcode) => $this->shiftRotateHandler->lsr($opcode),
       'ROL' => fn(Opcode $opcode) => $this->shiftRotateHandler->rol($opcode),
       'ROR' => fn(Opcode $opcode) => $this->shiftRotateHandler->ror($opcode),
 
-      // Increment/Decrement Operations
       'INC' => fn(Opcode $opcode) => $this->incDecHandler->inc($opcode),
       'DEC' => fn(Opcode $opcode) => $this->incDecHandler->dec($opcode),
       'INX' => fn(Opcode $opcode) => $this->incDecHandler->inx($opcode),
@@ -230,7 +201,6 @@ class CPU
       'INY' => fn(Opcode $opcode) => $this->incDecHandler->iny($opcode),
       'DEY' => fn(Opcode $opcode) => $this->incDecHandler->dey($opcode),
 
-      // Flow Control Operations
       'BEQ' => fn(Opcode $opcode) => $this->flowControlHandler->beq($opcode),
       'BNE' => fn(Opcode $opcode) => $this->flowControlHandler->bne($opcode),
       'BCC' => fn(Opcode $opcode) => $this->flowControlHandler->bcc($opcode),
@@ -245,13 +215,11 @@ class CPU
       'BRK' => fn(Opcode $opcode) => $this->flowControlHandler->brk($opcode),
       'RTI' => fn(Opcode $opcode) => $this->flowControlHandler->rti($opcode),
 
-      // Stack Operations
       'PHA' => fn(Opcode $opcode) => $this->stackHandler->pha($opcode),
       'PLA' => fn(Opcode $opcode) => $this->stackHandler->pla($opcode),
       'PHP' => fn(Opcode $opcode) => $this->stackHandler->php($opcode),
       'PLP' => fn(Opcode $opcode) => $this->stackHandler->plp($opcode),
 
-      // Flag Operations
       'SEC' => fn(Opcode $opcode) => $this->flagsHandler->sec($opcode),
       'CLC' => fn(Opcode $opcode) => $this->flagsHandler->clc($opcode),
       'SEI' => fn(Opcode $opcode) => $this->flagsHandler->sei($opcode),
@@ -260,8 +228,7 @@ class CPU
       'CLD' => fn(Opcode $opcode) => $this->flagsHandler->cld($opcode),
       'CLV' => fn(Opcode $opcode) => $this->flagsHandler->clv($opcode),
 
-      // System
-      'NOP' => fn(Opcode $opcode) => $opcode->getCycles(), // NOP just takes cycles, does nothing
+      'NOP' => fn(Opcode $opcode) => $opcode->getCycles(),
     ];
   }
 
@@ -314,14 +281,14 @@ class CPU
 
   public function pushWord(int $value): void
   {
-    $this->pushByte(($value >> 8) & 0xFF); // High byte first
-    $this->pushByte($value & 0xFF);        // Low byte second
+    $this->pushByte(($value >> 8) & 0xFF);
+    $this->pushByte($value & 0xFF);
   }
 
   public function pullWord(): int
   {
-    $low = $this->pullByte();              // Low byte first
-    $high = $this->pullByte();             // High byte second
+    $low = $this->pullByte();
+    $high = $this->pullByte();
     return ($high << 8) | $low;
   }
 
@@ -428,8 +395,6 @@ class CPU
     $this->pc++;
     $indirectAddress = ($high << 8) | $low;
 
-    // 6502 bug: if indirect address is at page boundary (xxFF),
-    // high byte is read from xx00 instead of (xx+1)00
     if (($indirectAddress & 0xFF) == 0xFF) {
       $targetLow = $this->memory->read_byte($indirectAddress);
       $targetHigh = $this->memory->read_byte($indirectAddress & 0xFF00);
@@ -448,13 +413,11 @@ class CPU
 
   private function implied(): int
   {
-    // No address calculation needed for implied mode
     return 0;
   }
 
   private function accumulator(): int
   {
-    // Accumulator addressing mode - no memory address
     return 0;
   }
 
@@ -483,5 +446,10 @@ class CPU
       $this->status->get(StatusRegister::ZERO) ? 'Z' : '-',
       $this->status->get(StatusRegister::CARRY) ? 'C' : '-'
     );
+  }
+
+  public function getBus(): ?BusInterface
+  {
+    return $this->bus;
   }
 }

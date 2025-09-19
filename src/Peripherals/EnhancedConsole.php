@@ -8,17 +8,17 @@ use Emulator\Bus\PeripheralInterface;
 
 class EnhancedConsole implements PeripheralInterface
 {
-  // Memory map
+  
   public const CONSOLE_BASE = 0xD000;
-  public const CONSOLE_OUTPUT = 0xD000;     // Write character to display
-  public const CONSOLE_INPUT_STATUS = 0xD001; // Input status
-  public const CONSOLE_INPUT_DATA = 0xD002;   // Input data
-  public const CONSOLE_CONTROL = 0xD003;      // Control register
+  public const CONSOLE_OUTPUT = 0xD000;     
+  public const CONSOLE_INPUT_STATUS = 0xD001; 
+  public const CONSOLE_INPUT_DATA = 0xD002;   
+  public const CONSOLE_CONTROL = 0xD003;      
 
-  // Control bits
-  public const CTRL_ECHO = 0x01;            // Echo input to display
-  public const CTRL_LINE_MODE = 0x02;       // Line-buffered input
-  public const CTRL_CLEAR_INPUT = 0x04;     // Clear input buffer
+  
+  public const CTRL_ECHO = 0x01;            
+  public const CTRL_LINE_MODE = 0x02;       
+  public const CTRL_CLEAR_INPUT = 0x04;     
 
   private TextDisplay $display;
   private array $inputBuffer = [];
@@ -30,7 +30,7 @@ class EnhancedConsole implements PeripheralInterface
   {
     $this->display = $display;
 
-    // Set non-blocking mode for stdin
+    
     if (php_sapi_name() === 'cli') {
       stream_set_blocking(STDIN, false);
     }
@@ -102,7 +102,7 @@ class EnhancedConsole implements PeripheralInterface
           $char = ord($input[$i]);
           $this->inputBuffer[] = $char;
 
-          // Echo to display if enabled
+          
           if ($this->echo && $char >= 0x20 && $char <= 0x7E) {
             $this->display->writeChar($char);
           }

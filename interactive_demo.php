@@ -4,56 +4,46 @@ require_once 'vendor/autoload.php';
 
 use Emulator\Assembler\Assembler;
 use Emulator\Memory;
-use Emulator\EnhancedCPU;
+use Emulator\CPU;
 use Emulator\Bus\SystemBus;
 use Emulator\Peripherals\TextDisplay;
 use Emulator\Peripherals\SoundController;
 use Emulator\Peripherals\EnhancedConsole;
 
-echo "🎮 === ENHANCED 6502 SYSTEM - INTERACTIVE DEMO === 🎮\n\n";
+echo "🎮 === THE 6502 EMULATOR - INTERACTIVE DEMO === 🎮\n\n";
 
-// Available demo programs
-$demos = [
-  'hello' => [
-    'file' => 'examples/hello.asm',
-    'name' => 'Hello World',
-    'description' => 'Classic hello world with string output'
-  ],
-  'welcome' => [
-    'file' => 'examples/welcome.asm',
-    'name' => 'Welcome Message',
-    'description' => 'Colorful welcome message demonstration'
-  ],
-  'colors' => [
-    'file' => 'examples/colors.asm',
-    'name' => 'Color Demo',
-    'description' => 'Cycles through all 16 text colors'
-  ],
-  'sound' => [
-    'file' => 'examples/sound.asm',
-    'name' => 'Sound Demo',
-    'description' => 'Plays a melody with harmony on multiple channels'
-  ],
-  'counter' => [
-    'file' => 'examples/counter.asm',
-    'name' => 'Counter Demo',
-    'description' => 'Live counting display from 0 to 99'
-  ]
-];
+function discoverPrograms()
+{
+  $demos = [];
+  $files = glob('examples/*.asm');
 
-function showMenu($demos) {
+  $index = 1;
+  foreach ($files as $file) {
+    $name = basename($file, '.asm');
+    $demos[$index] = [
+      'file' => $file,
+      'name' => ucfirst($name)
+    ];
+    $index++;
+  }
+
+  return $demos;
+}
+
+function showMenu($demos)
+{
   echo "Available Demo Programs:\n";
   echo "========================\n\n";
 
   foreach ($demos as $key => $demo) {
-    echo sprintf("  %s) %s\n", strtoupper($key), $demo['name']);
-    echo sprintf("     %s\n\n", $demo['description']);
+    echo sprintf("  %d) %s\n", $key, $demo['name']);
   }
 
-  echo "  Q) Quit\n\n";
+  echo "\n  Q) Quit\n\n";
 }
 
-function getUserChoice() {
+function getUserChoice()
+{
   echo "Enter your choice: ";
   $handle = fopen("php://stdin", "r");
   $choice = trim(fgets($handle));
@@ -61,12 +51,12 @@ function getUserChoice() {
   return strtolower($choice);
 }
 
-function runProgram($assemblyFile) {
+function runProgram($assemblyFile)
+{
   echo "\n" . str_repeat("=", 50) . "\n";
   echo "🚀 Running: " . basename($assemblyFile) . "\n";
   echo str_repeat("=", 50) . "\n\n";
 
-  // Assemble the program
   $assembler = new Assembler();
 
   try {
@@ -77,13 +67,11 @@ function runProgram($assemblyFile) {
     echo "✅ Assembly successful!\n";
     echo "📊 Program size: " . count($program) . " bytes\n";
     echo "🏷️  Labels found: " . count($labels) . "\n\n";
-
   } catch (Exception $e) {
     echo "❌ Assembly failed: " . $e->getMessage() . "\n\n";
     return;
   }
 
-  // Create the enhanced system
   echo "🔧 Creating enhanced 6502 system...\n";
 
   $memory = new Memory();
@@ -97,14 +85,12 @@ function runProgram($assemblyFile) {
   $bus->addPeripheral($sound);
   $bus->addPeripheral($console);
 
-  $cpu = new EnhancedCPU($bus);
+  $cpu = new CPU($bus);
 
-  // Load program into memory
   foreach ($program as $addr => $byte) {
     $memory->write_byte($addr, $byte);
   }
 
-  // Set reset vector if not specified
   if (!isset($program[0xFFFC]) && !isset($program[0xFFFD])) {
     $startAddr = min(array_keys($program));
     $memory->write_byte(0xFFFC, $startAddr & 0xFF);
@@ -113,63 +99,86 @@ function runProgram($assemblyFile) {
   }
 
   echo "▶️  Starting execution...\n";
-  echo "💡 Press Ctrl+C to stop\n\n";
+  echo "💡 Press 'q' + Enter to return to menu, or Ctrl+C to stop\n\n";
+
+  stream_set_blocking(STDIN, false);
 
   $cpu->reset();
 
   try {
     $instructionCount = 0;
     $lastRefresh = microtime(true);
-    $maxInstructions = 50000; // Reasonable limit for demos
+    $maxInstructions = 50000;
+    $lastPC = $cpu->pc;
+    $stuckCount = 0;
 
     while ($instructionCount < $maxInstructions) {
+      $input = fread(STDIN, 1024);
+      if ($input !== false && trim(strtolower($input)) === 'q') {
+        echo "\n\n🔙 Returning to main menu...\n";
+        break;
+      }
+
       $cpu->executeInstruction();
       $instructionCount++;
 
-      // Refresh display periodically
-      $now = microtime(true);
-      if ($now - $lastRefresh > 0.1) {
-        $console->refresh();
-        $lastRefresh = $now;
+      if ($cpu->pc == $lastPC) {
+        $stuckCount++;
 
-        // Show status
-        echo sprintf("\r📈 Instructions: %d | 🎯 PC: 0x%04X",
-          $instructionCount, $cpu->pc);
-        flush();
+        if ($stuckCount > 1000) {
+          echo "\n\n✅ Program completed (infinite loop detected)\n";
+          break;
+        }
+      } else {
+        $stuckCount = 0;
+        $lastPC = $cpu->pc;
       }
 
-      // Realistic timing
-      usleep(1000); // 1ms delay
+      $now = microtime(true);
+      if ($now - $lastRefresh > 0.05) {
+        $console->refresh();
+        $lastRefresh = $now;
+      }
+
+      usleep(500);
     }
 
-    echo "\n\n⏱️  Program completed (instruction limit reached)\n";
-
+    if ($instructionCount >= $maxInstructions) {
+      echo "\n\n⏱️  Program completed (instruction limit reached)\n";
+    }
   } catch (Exception $e) {
     echo "\n\n💥 Program error: " . $e->getMessage() . "\n";
     echo "🎯 PC: 0x" . sprintf('%04X', $cpu->pc) . "\n";
   }
 
-  // Final display refresh
   $console->refresh();
+
+  while (($buffer = fread(STDIN, 1024)) !== false && strlen($buffer) > 0) {
+    
+  }
+
+  stream_set_blocking(STDIN, true);
 
   echo "\n" . str_repeat("=", 50) . "\n";
   echo "Press Enter to continue...";
   fgets(STDIN);
 }
 
-// Main program loop
 while (true) {
-  // Clear screen
   echo "\033[2J\033[H";
+  echo "🎮 === THE 6502 EMULATOR - INTERACTIVE DEMO === 🎮\n\n";
 
-  echo "🎮 === ENHANCED 6502 SYSTEM - INTERACTIVE DEMO === 🎮\n\n";
-
+  $demos = discoverPrograms();
   showMenu($demos);
   $choice = getUserChoice();
 
   if ($choice === 'q') {
-    echo "\n👋 Thanks for using the Enhanced 6502 System!\n";
+    echo "\n👋 Thanks for using the 6502 emulator!\n";
     break;
+  }
+
+  if (is_numeric($choice)) {
+    $choice = (int)$choice;
   }
 
   if (!isset($demos[$choice])) {

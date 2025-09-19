@@ -25,14 +25,14 @@ class SystemBus implements BusInterface
   {
     $address = $address & 0xFFFF;
 
-    // Check if any peripheral handles this address
+    
     foreach ($this->peripherals as $peripheral) {
       if ($peripheral->handlesAddress($address)) {
         return $peripheral->read($address);
       }
     }
 
-    // Default to memory
+    
     return $this->memory->read_byte($address);
   }
 
@@ -41,7 +41,7 @@ class SystemBus implements BusInterface
     $address = $address & 0xFFFF;
     $value = $value & 0xFF;
 
-    // Check if any peripheral handles this address
+    
     foreach ($this->peripherals as $peripheral) {
       if ($peripheral->handlesAddress($address)) {
         $peripheral->write($address, $value);
@@ -49,13 +49,13 @@ class SystemBus implements BusInterface
       }
     }
 
-    // Default to memory
+    
     $this->memory->write_byte($address, $value);
   }
 
   public function tick(): void
   {
-    // Update all peripherals each CPU cycle
+    
     foreach ($this->peripherals as $peripheral) {
       $peripheral->tick();
     }

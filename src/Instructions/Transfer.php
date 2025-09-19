@@ -71,7 +71,7 @@ class Transfer
   {
     $this->cpu->sp = $this->cpu->getRegisterX();
 
-    // TXS does not affect flags
+    
     return $opcode->getCycles();
   }
 }

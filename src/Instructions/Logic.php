@@ -20,7 +20,7 @@ class Logic
 
     $this->cpu->setAccumulator($result);
 
-    // Set flags
+    
     $this->cpu->status->set(StatusRegister::ZERO, $result === 0);
     $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);
 
@@ -35,7 +35,7 @@ class Logic
 
     $this->cpu->setAccumulator($result);
 
-    // Set flags
+    
     $this->cpu->status->set(StatusRegister::ZERO, $result === 0);
     $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);
 
@@ -50,7 +50,7 @@ class Logic
 
     $this->cpu->setAccumulator($result);
 
-    // Set flags
+    
     $this->cpu->status->set(StatusRegister::ZERO, $result === 0);
     $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);
 
@@ -63,12 +63,12 @@ class Logic
     $value = $this->cpu->getMemory()->read_byte($address);
     $result = $this->cpu->getAccumulator() & $value;
 
-    // Set flags (special behavior for BIT)
+    
     $this->cpu->status->set(StatusRegister::ZERO, $result === 0);
-    $this->cpu->status->set(StatusRegister::NEGATIVE, ($value & 0x80) !== 0); // N = bit 7 of memory
-    $this->cpu->status->set(StatusRegister::OVERFLOW, ($value & 0x40) !== 0);  // V = bit 6 of memory
+    $this->cpu->status->set(StatusRegister::NEGATIVE, ($value & 0x80) !== 0); 
+    $this->cpu->status->set(StatusRegister::OVERFLOW, ($value & 0x40) !== 0);  
 
-    // Note: accumulator is NOT modified by BIT instruction
+    
 
     return $opcode->getCycles();
   }

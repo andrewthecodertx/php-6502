@@ -20,7 +20,7 @@ class IncDec
 
     $this->cpu->getMemory()->write_byte($address, $result);
 
-    // Set flags
+    
     $this->cpu->status->set(StatusRegister::ZERO, $result === 0);
     $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);
 
@@ -35,7 +35,7 @@ class IncDec
 
     $this->cpu->getMemory()->write_byte($address, $result);
 
-    // Set flags
+    
     $this->cpu->status->set(StatusRegister::ZERO, $result === 0);
     $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);
 
@@ -47,7 +47,7 @@ class IncDec
     $result = ($this->cpu->getRegisterX() + 1) & 0xFF;
     $this->cpu->setRegisterX($result);
 
-    // Set flags
+    
     $this->cpu->status->set(StatusRegister::ZERO, $result === 0);
     $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);
 
@@ -59,7 +59,7 @@ class IncDec
     $result = ($this->cpu->getRegisterX() - 1) & 0xFF;
     $this->cpu->setRegisterX($result);
 
-    // Set flags
+    
     $this->cpu->status->set(StatusRegister::ZERO, $result === 0);
     $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);
 
@@ -71,7 +71,7 @@ class IncDec
     $result = ($this->cpu->getRegisterY() + 1) & 0xFF;
     $this->cpu->setRegisterY($result);
 
-    // Set flags
+    
     $this->cpu->status->set(StatusRegister::ZERO, $result === 0);
     $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);
 
@@ -83,7 +83,7 @@ class IncDec
     $result = ($this->cpu->getRegisterY() - 1) & 0xFF;
     $this->cpu->setRegisterY($result);
 
-    // Set flags
+    
     $this->cpu->status->set(StatusRegister::ZERO, $result === 0);
     $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);
 
