@@ -1,16 +1,16 @@
-# Display Peripheral Guide
+# Video Mode Guide
 
-This guide covers how to use the display system in the 6502 emulator, including
-both the TextDisplay and EnhancedConsole peripherals.
+This guide covers how to use the video system in the 6502 emulator, including
+both Graphics Mode and Terminal Mode.
 
 ## Overview
 
-The emulator provides two display peripherals:
+The emulator provides two video modes:
 
-- **TextDisplay**: Direct memory-mapped display with 40x25 character grid
-- **EnhancedConsole**: Higher-level console interface that uses TextDisplay
+- **GraphicsMode**: Direct memory-mapped graphics with 40x25 character grid
+- **TerminalMode**: Higher-level terminal interface that uses GraphicsMode
 
-## TextDisplay Peripheral
+## Graphics Mode (Direct Video)
 
 ### Memory Map
 
@@ -130,7 +130,7 @@ AND #$FD        ; Clear bit 1, keep others
 STA $C3EC       ; Write back
 ```
 
-## EnhancedConsole Peripheral
+## Terminal Mode (Character I/O)
 
 ### Memory Map
 
@@ -294,8 +294,8 @@ STA CURSOR_Y    ; Save Y position
 
 - The display automatically refreshes periodically during CPU execution
 - Characters outside the printable ASCII range (0x20-0x7E) may not display properly
-- The EnhancedConsole automatically handles cursor advancement and line wrapping
-- Direct TextDisplay access gives you complete control but requires manual
+- The TerminalMode automatically handles cursor advancement and line wrapping
+- Direct GraphicsMode access gives you complete control but requires manual
 cursor management
 - Both peripherals share the same underlying display buffer
 

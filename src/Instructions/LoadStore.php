@@ -14,61 +14,61 @@ class LoadStore
 
   public function lda(Opcode $opcode): int
   {
-    $address = $this->cpu->getAddress($opcode->getAddressingMode());
-    $value = $this->cpu->getMemory()->read_byte($address);
-    $this->cpu->setAccumulator($value);
+  $address = $this->cpu->getAddress($opcode->getAddressingMode());
+  $value = $this->cpu->getMemory()->read_byte($address);
+  $this->cpu->setAccumulator($value);
 
-    $this->cpu->status->set(StatusRegister::ZERO, $value === 0);
-    $this->cpu->status->set(StatusRegister::NEGATIVE, ($value & 0x80) !== 0);
+  $this->cpu->status->set(StatusRegister::ZERO, $value === 0);
+  $this->cpu->status->set(StatusRegister::NEGATIVE, ($value & 0x80) !== 0);
 
-    return $opcode->getCycles();
+  return $opcode->getCycles();
   }
 
   public function sta(Opcode $opcode): int
   {
-    $address = $this->cpu->getAddress($opcode->getAddressingMode());
-    $this->cpu->getMemory()->write_byte($address, $this->cpu->getAccumulator());
+  $address = $this->cpu->getAddress($opcode->getAddressingMode());
+  $this->cpu->getMemory()->write_byte($address, $this->cpu->getAccumulator());
 
-    return $opcode->getCycles();
+  return $opcode->getCycles();
   }
 
   public function ldx(Opcode $opcode): int
   {
-    $address = $this->cpu->getAddress($opcode->getAddressingMode());
-    $value = $this->cpu->getMemory()->read_byte($address);
-    $this->cpu->setRegisterX($value);
+  $address = $this->cpu->getAddress($opcode->getAddressingMode());
+  $value = $this->cpu->getMemory()->read_byte($address);
+  $this->cpu->setRegisterX($value);
 
-    $this->cpu->status->set(StatusRegister::ZERO, $value === 0);
-    $this->cpu->status->set(StatusRegister::NEGATIVE, ($value & 0x80) !== 0);
+  $this->cpu->status->set(StatusRegister::ZERO, $value === 0);
+  $this->cpu->status->set(StatusRegister::NEGATIVE, ($value & 0x80) !== 0);
 
-    return $opcode->getCycles();
+  return $opcode->getCycles();
   }
 
   public function ldy(Opcode $opcode): int
   {
-    $address = $this->cpu->getAddress($opcode->getAddressingMode());
-    $value = $this->cpu->getMemory()->read_byte($address);
-    $this->cpu->setRegisterY($value);
+  $address = $this->cpu->getAddress($opcode->getAddressingMode());
+  $value = $this->cpu->getMemory()->read_byte($address);
+  $this->cpu->setRegisterY($value);
 
-    $this->cpu->status->set(StatusRegister::ZERO, $value === 0);
-    $this->cpu->status->set(StatusRegister::NEGATIVE, ($value & 0x80) !== 0);
+  $this->cpu->status->set(StatusRegister::ZERO, $value === 0);
+  $this->cpu->status->set(StatusRegister::NEGATIVE, ($value & 0x80) !== 0);
 
-    return $opcode->getCycles();
+  return $opcode->getCycles();
   }
 
   public function stx(Opcode $opcode): int
   {
-    $address = $this->cpu->getAddress($opcode->getAddressingMode());
-    $this->cpu->getMemory()->write_byte($address, $this->cpu->getRegisterX());
+  $address = $this->cpu->getAddress($opcode->getAddressingMode());
+  $this->cpu->getMemory()->write_byte($address, $this->cpu->getRegisterX());
 
-    return $opcode->getCycles();
+  return $opcode->getCycles();
   }
 
   public function sty(Opcode $opcode): int
   {
-    $address = $this->cpu->getAddress($opcode->getAddressingMode());
-    $this->cpu->getMemory()->write_byte($address, $this->cpu->getRegisterY());
+  $address = $this->cpu->getAddress($opcode->getAddressingMode());
+  $this->cpu->getMemory()->write_byte($address, $this->cpu->getRegisterY());
 
-    return $opcode->getCycles();
+  return $opcode->getCycles();
   }
 }

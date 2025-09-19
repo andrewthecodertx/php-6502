@@ -14,107 +14,107 @@ class ShiftRotate
 
   public function asl(Opcode $opcode): int
   {
-    $addressingMode = $opcode->getAddressingMode();
+  $addressingMode = $opcode->getAddressingMode();
 
-    if ($addressingMode === 'Accumulator') {
-      $value = $this->cpu->getAccumulator();
-      $result = $value << 1;
+  if ($addressingMode === 'Accumulator') {
+  $value = $this->cpu->getAccumulator();
+  $result = $value << 1;
 
-      $this->cpu->status->set(StatusRegister::CARRY, ($value & 0x80) !== 0);
-      $this->cpu->setAccumulator($result & 0xFF);
-    } else {
-      $address = $this->cpu->getAddress($addressingMode);
-      $value = $this->cpu->getMemory()->read_byte($address);
-      $result = $value << 1;
+  $this->cpu->status->set(StatusRegister::CARRY, ($value & 0x80) !== 0);
+  $this->cpu->setAccumulator($result & 0xFF);
+  } else {
+  $address = $this->cpu->getAddress($addressingMode);
+  $value = $this->cpu->getMemory()->read_byte($address);
+  $result = $value << 1;
 
-      $this->cpu->status->set(StatusRegister::CARRY, ($value & 0x80) !== 0);
-      $this->cpu->getMemory()->write_byte($address, $result & 0xFF);
-    }
+  $this->cpu->status->set(StatusRegister::CARRY, ($value & 0x80) !== 0);
+  $this->cpu->getMemory()->write_byte($address, $result & 0xFF);
+  }
 
-    
-    $this->cpu->status->set(StatusRegister::ZERO, ($result & 0xFF) === 0);
-    $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);
+  
+  $this->cpu->status->set(StatusRegister::ZERO, ($result & 0xFF) === 0);
+  $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);
 
-    return $opcode->getCycles();
+  return $opcode->getCycles();
   }
 
   public function lsr(Opcode $opcode): int
   {
-    $addressingMode = $opcode->getAddressingMode();
+  $addressingMode = $opcode->getAddressingMode();
 
-    if ($addressingMode === 'Accumulator') {
-      $value = $this->cpu->getAccumulator();
-      $result = $value >> 1;
+  if ($addressingMode === 'Accumulator') {
+  $value = $this->cpu->getAccumulator();
+  $result = $value >> 1;
 
-      $this->cpu->status->set(StatusRegister::CARRY, ($value & 0x01) !== 0);
-      $this->cpu->setAccumulator($result);
-    } else {
-      $address = $this->cpu->getAddress($addressingMode);
-      $value = $this->cpu->getMemory()->read_byte($address);
-      $result = $value >> 1;
+  $this->cpu->status->set(StatusRegister::CARRY, ($value & 0x01) !== 0);
+  $this->cpu->setAccumulator($result);
+  } else {
+  $address = $this->cpu->getAddress($addressingMode);
+  $value = $this->cpu->getMemory()->read_byte($address);
+  $result = $value >> 1;
 
-      $this->cpu->status->set(StatusRegister::CARRY, ($value & 0x01) !== 0);
-      $this->cpu->getMemory()->write_byte($address, $result);
-    }
+  $this->cpu->status->set(StatusRegister::CARRY, ($value & 0x01) !== 0);
+  $this->cpu->getMemory()->write_byte($address, $result);
+  }
 
-    
-    $this->cpu->status->set(StatusRegister::ZERO, $result === 0);
-    $this->cpu->status->set(StatusRegister::NEGATIVE, false); 
+  
+  $this->cpu->status->set(StatusRegister::ZERO, $result === 0);
+  $this->cpu->status->set(StatusRegister::NEGATIVE, false); 
 
-    return $opcode->getCycles();
+  return $opcode->getCycles();
   }
 
   public function rol(Opcode $opcode): int
   {
-    $addressingMode = $opcode->getAddressingMode();
-    $carry = $this->cpu->status->get(StatusRegister::CARRY) ? 1 : 0;
+  $addressingMode = $opcode->getAddressingMode();
+  $carry = $this->cpu->status->get(StatusRegister::CARRY) ? 1 : 0;
 
-    if ($addressingMode === 'Accumulator') {
-      $value = $this->cpu->getAccumulator();
-      $result = ($value << 1) | $carry;
+  if ($addressingMode === 'Accumulator') {
+  $value = $this->cpu->getAccumulator();
+  $result = ($value << 1) | $carry;
 
-      $this->cpu->status->set(StatusRegister::CARRY, ($value & 0x80) !== 0);
-      $this->cpu->setAccumulator($result & 0xFF);
-    } else {
-      $address = $this->cpu->getAddress($addressingMode);
-      $value = $this->cpu->getMemory()->read_byte($address);
-      $result = ($value << 1) | $carry;
+  $this->cpu->status->set(StatusRegister::CARRY, ($value & 0x80) !== 0);
+  $this->cpu->setAccumulator($result & 0xFF);
+  } else {
+  $address = $this->cpu->getAddress($addressingMode);
+  $value = $this->cpu->getMemory()->read_byte($address);
+  $result = ($value << 1) | $carry;
 
-      $this->cpu->status->set(StatusRegister::CARRY, ($value & 0x80) !== 0);
-      $this->cpu->getMemory()->write_byte($address, $result & 0xFF);
-    }
+  $this->cpu->status->set(StatusRegister::CARRY, ($value & 0x80) !== 0);
+  $this->cpu->getMemory()->write_byte($address, $result & 0xFF);
+  }
 
-    
-    $this->cpu->status->set(StatusRegister::ZERO, ($result & 0xFF) === 0);
-    $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);
+  
+  $this->cpu->status->set(StatusRegister::ZERO, ($result & 0xFF) === 0);
+  $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);
 
-    return $opcode->getCycles();
+  return $opcode->getCycles();
   }
 
   public function ror(Opcode $opcode): int
   {
-    $addressingMode = $opcode->getAddressingMode();
-    $carry = $this->cpu->status->get(StatusRegister::CARRY) ? 0x80 : 0;
+  $addressingMode = $opcode->getAddressingMode();
+  $carry = $this->cpu->status->get(StatusRegister::CARRY) ? 0x80 : 0;
 
-    if ($addressingMode === 'Accumulator') {
-      $value = $this->cpu->getAccumulator();
-      $result = ($value >> 1) | $carry;
+  if ($addressingMode === 'Accumulator') {
+  $value = $this->cpu->getAccumulator();
+  $result = ($value >> 1) | $carry;
 
-      $this->cpu->status->set(StatusRegister::CARRY, ($value & 0x01) !== 0);
-      $this->cpu->setAccumulator($result);
-    } else {
-      $address = $this->cpu->getAddress($addressingMode);
-      $value = $this->cpu->getMemory()->read_byte($address);
-      $result = ($value >> 1) | $carry;
+  $this->cpu->status->set(StatusRegister::CARRY, ($value & 0x01) !== 0);
+  $this->cpu->setAccumulator($result);
+  } else {
+  $address = $this->cpu->getAddress($addressingMode);
+  $value = $this->cpu->getMemory()->read_byte($address);
+  $result = ($value >> 1) | $carry;
 
-      $this->cpu->status->set(StatusRegister::CARRY, ($value & 0x01) !== 0);
-      $this->cpu->getMemory()->write_byte($address, $result);
-    }
+  $this->cpu->status->set(StatusRegister::CARRY, ($value & 0x01) !== 0);
+  $this->cpu->getMemory()->write_byte($address, $result);
+  }
 
-    
-    $this->cpu->status->set(StatusRegister::ZERO, $result === 0);
-    $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);
+  
+  $this->cpu->status->set(StatusRegister::ZERO, $result === 0);
+  $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);
 
-    return $opcode->getCycles();
+  return $opcode->getCycles();
   }
 }

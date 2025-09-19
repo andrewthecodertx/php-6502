@@ -13,13 +13,13 @@ abstract class Instruction extends BaseInstruction
 
   public function __construct(CPU $cpu, InstructionRegistry $registry)
   {
-    parent::__construct($cpu);
-    $this->registry = $registry;
+  parent::__construct($cpu);
+  $this->registry = $registry;
   }
 
   protected function getInstructionData(string $mnemonic, AddressingMode $addressingMode): ?Opcode
   {
-    return $this->registry->findOpcode($mnemonic, $addressingMode->name);
+  return $this->registry->findOpcode($mnemonic, $addressingMode->name);
   }
 
   abstract public function execute(string $operand, AddressingMode $addressingMode): array;

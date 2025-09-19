@@ -6,11 +6,105 @@ use Emulator\Assembler\Assembler;
 use Emulator\Memory;
 use Emulator\CPU;
 use Emulator\Bus\SystemBus;
-use Emulator\Peripherals\TextDisplay;
+use Emulator\Peripherals\GraphicsMode;
 use Emulator\Peripherals\SoundController;
-use Emulator\Peripherals\EnhancedConsole;
+use Emulator\Peripherals\TerminalMode;
+use Emulator\StatusRegister;
+use Emulator\Bus\BusInterface;
 
 echo "🎮 === THE 6502 EMULATOR - INTERACTIVE DEMO === 🎮\n\n";
+
+function showCPUState($cpu, $instructionCount, $videoModeIndicator = "")
+{
+  // Position cursor at bottom of screen for debug info
+  echo "\033[26;1H"; // Move to line 26
+  echo "\033[K"; // Clear line
+  echo "📊 CPU Registers: ";
+  echo sprintf("PC=0x%04X ", $cpu->pc);
+  echo sprintf("A=0x%02X ", $cpu->getAccumulator());
+  echo sprintf("X=0x%02X ", $cpu->getRegisterX());
+  echo sprintf("Y=0x%02X ", $cpu->getRegisterY());
+  echo sprintf("SP=0x%02X ", $cpu->sp);
+  echo sprintf("Instructions=%d ", $instructionCount);
+
+  // Show flags
+  echo "Flags: ";
+  echo $cpu->status->get(StatusRegister::NEGATIVE) ? 'N' : '-';
+  echo $cpu->status->get(StatusRegister::OVERFLOW) ? 'V' : '-';
+  echo '-'; // Unused bit
+  echo $cpu->status->get(StatusRegister::BREAK_COMMAND) ? 'B' : '-';
+  echo $cpu->status->get(StatusRegister::DECIMAL_MODE) ? 'D' : '-';
+  echo $cpu->status->get(StatusRegister::INTERRUPT_DISABLE) ? 'I' : '-';
+  echo $cpu->status->get(StatusRegister::ZERO) ? 'Z' : '-';
+  echo $cpu->status->get(StatusRegister::CARRY) ? 'C' : '-';
+
+  // Show video mode indicator
+  if ($videoModeIndicator) {
+    echo "\033[27;1H"; // Move to line 27
+    echo "\033[K"; // Clear line
+    echo $videoModeIndicator;
+  }
+
+  // Position cursor back to display area
+  // echo "\033[1;1H";
+}
+
+// Global variables to track video mode access
+$GLOBALS['graphics_mode_used'] = false;
+$GLOBALS['terminal_mode_used'] = false;
+
+class VideoModeMonitorBus implements BusInterface
+{
+  private $wrappedBus;
+
+  public function __construct(BusInterface $bus)
+  {
+    $this->wrappedBus = $bus;
+  }
+
+  public function read(int $address): int
+  {
+    return $this->wrappedBus->read($address);
+  }
+
+  public function write(int $address, int $value): void
+  {
+    // Monitor writes to detect video mode usage
+    if ($address >= 0xC000 && $address <= 0xC3EC) {
+      $GLOBALS['graphics_mode_used'] = true;
+    } elseif ($address >= 0xD000 && $address <= 0xD003) {
+      $GLOBALS['terminal_mode_used'] = true;
+    }
+
+    $this->wrappedBus->write($address, $value);
+  }
+
+  public function tick(): void
+  {
+    $this->wrappedBus->tick();
+  }
+
+  public function addPeripheral($peripheral): void
+  {
+    $this->wrappedBus->addPeripheral($peripheral);
+  }
+}
+
+function detectVideoMode()
+{
+  $graphicsUsed = $GLOBALS['graphics_mode_used'];
+  $terminalUsed = $GLOBALS['terminal_mode_used'];
+
+  if ($graphicsUsed && $terminalUsed) {
+    return "🎨📺 Video Mode: Mixed (Graphics + Terminal)";
+  } elseif ($graphicsUsed) {
+    return "🎨 Video Mode: Graphics Mode (\$C000-\$C3EC) - Direct Memory Mapping";
+  } elseif ($terminalUsed) {
+    return "📺 Video Mode: Terminal Mode (\$D000-\$D003) - Character Stream";
+  } else {
+    return "⚪ Video Mode: Auto-detecting...";
+  }
+}
 
 function discoverPrograms()
 {
@@ -36,18 +130,24 @@ function showMenu($demos)
   echo "========================\n\n";
 
   foreach ($demos as $key => $demo) {
-    echo sprintf("  %d) %s\n", $key, $demo['name']);
+    $modeHint = "";
+    if (strpos(strtolower($demo['name']), 'hello_world') !== false) {
+      $modeHint = " [Terminal Mode - \$D000]";
+    } elseif (strpos(strtolower($demo['name']), 'hello') !== false && strpos(strtolower($demo['name']), 'hello_world') === false) {
+      $modeHint = " [Graphics Mode - \$C000]";
+    }
+    echo sprintf("  %d) %s%s\n", $key, $demo['name'], $modeHint);
   }
 
+  echo "\n💡 Graphics Mode: Direct video memory (\$C000-\$C3EC)\n";
+  echo "💡 Terminal Mode: Character stream I/O (\$D000-\$D003)\n";
   echo "\n  Q) Quit\n\n";
 }
 
 function getUserChoice()
 {
   echo "Enter your choice: ";
-  $handle = fopen("php://stdin", "r");
-  $choice = trim(fgets($handle));
-  fclose($handle);
+  $choice = trim(fgets(STDIN));
   return strtolower($choice);
 }
 
@@ -74,17 +174,22 @@ function runProgram($assemblyFile)
 
   echo "🔧 Creating enhanced 6502 system...\n";
 
+  // Reset video mode detection
+  $GLOBALS['graphics_mode_used'] = false;
+  $GLOBALS['terminal_mode_used'] = false;
+
   $memory = new Memory();
-  $bus = new SystemBus($memory);
-
-  $display = new TextDisplay();
+  $systemBus = new SystemBus($memory);
+  $display = new GraphicsMode();
   $sound = new SoundController();
-  $console = new EnhancedConsole($display);
+  $console = new TerminalMode($display);
 
-  $bus->addPeripheral($display);
-  $bus->addPeripheral($sound);
-  $bus->addPeripheral($console);
+  $systemBus->addPeripheral($display);
+  $systemBus->addPeripheral($sound);
+  $systemBus->addPeripheral($console);
 
+  // Wrap the bus with video mode monitoring
+  $bus = new VideoModeMonitorBus($systemBus);
   $cpu = new CPU($bus);
 
   foreach ($program as $addr => $byte) {
@@ -98,52 +203,49 @@ function runProgram($assemblyFile)
     echo "🔄 Set reset vector to: 0x" . sprintf('%04X', $startAddr) . "\n";
   }
 
-  echo "▶️  Starting execution...\n";
-  echo "💡 Press 'q' + Enter to return to menu, or Ctrl+C to stop\n\n";
-
-  stream_set_blocking(STDIN, false);
+  echo "▶️  Starting execution...\n\n";
 
   $cpu->reset();
 
   // Initial refresh to show starting state
   $console->refresh();
 
+  echo "\n💡 Watch the CPU state at the bottom of the screen\n";
+  echo "💡 Program will run automatically\n\n";
+
   try {
     $instructionCount = 0;
-    $lastRefresh = microtime(true);
     $maxInstructions = 50000;
     $lastPC = $cpu->pc;
     $stuckCount = 0;
 
     while ($instructionCount < $maxInstructions) {
-      $input = fread(STDIN, 1024);
-      if ($input !== false && trim(strtolower($input)) === 'q') {
-        echo "\n\n🔙 Returning to main menu...\n";
-        break;
-      }
-
+      // Execute one instruction
       $cpu->executeInstruction();
       $instructionCount++;
 
+      // Refresh display and show CPU state every instruction
+      $console->refresh();
+      $videoModeIndicator = detectVideoMode();
+      showCPUState($cpu, $instructionCount, $videoModeIndicator);
+
+      // Check for infinite loop
       if ($cpu->pc == $lastPC) {
         $stuckCount++;
-
-        if ($stuckCount > 1000) {
-          echo "\n\n✅ Program completed (infinite loop detected)\n";
+        if ($stuckCount > 5) {
+          // Final refresh to show last display state
+          $console->refresh();
+          $videoModeIndicator = detectVideoMode();
+          showCPUState($cpu, $instructionCount, $videoModeIndicator);
+          echo "\033[30;1H"; // Move to line 30
+          echo "🔄 Infinite loop detected at PC=0x" . sprintf('%04X', $cpu->pc) . "\n";
+          echo "✅ Program completed successfully! Total instructions: $instructionCount\n";
           break;
         }
       } else {
         $stuckCount = 0;
         $lastPC = $cpu->pc;
       }
-
-      $now = microtime(true);
-      if ($now - $lastRefresh > 0.1) {
-        $console->refresh();
-        $lastRefresh = $now;
-      }
-
-      usleep(500);
     }
 
     if ($instructionCount >= $maxInstructions) {
@@ -154,17 +256,13 @@ function runProgram($assemblyFile)
     echo "🎯 PC: 0x" . sprintf('%04X', $cpu->pc) . "\n";
   }
 
+  // Final refresh to ensure all output is shown
   $console->refresh();
 
-  while (($buffer = fread(STDIN, 1024)) !== false && strlen($buffer) > 0) {
-    
-  }
-
-  stream_set_blocking(STDIN, true);
-
-  echo "\n" . str_repeat("=", 50) . "\n";
-  echo "Press Enter to continue...";
-  fgets(STDIN);
+  echo "\033[31;1H"; // Move to line 31
+  echo str_repeat("=", 50) . "\n";
+  echo "Returning to main menu in 3 seconds...\n";
+  sleep(3);
 }
 
 while (true) {
@@ -185,7 +283,11 @@ while (true) {
   }
 
   if (!isset($demos[$choice])) {
-    echo "\n❌ Invalid choice. Please try again.\n";
+    if (empty($choice)) {
+      echo "\n❓ No choice entered. Please enter a number (1-" . count($demos) . ") or Q to quit.\n";
+    } else {
+      echo "\n❌ Invalid choice '$choice'. Please enter a number (1-" . count($demos) . ") or Q to quit.\n";
+    }
     echo "Press Enter to continue...";
     fgets(STDIN);
     continue;
