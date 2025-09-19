@@ -105,6 +105,9 @@ function runProgram($assemblyFile)
 
   $cpu->reset();
 
+  // Initial refresh to show starting state
+  $console->refresh();
+
   try {
     $instructionCount = 0;
     $lastRefresh = microtime(true);
@@ -135,7 +138,7 @@ function runProgram($assemblyFile)
       }
 
       $now = microtime(true);
-      if ($now - $lastRefresh > 0.05) {
+      if ($now - $lastRefresh > 0.1) {
         $console->refresh();
         $lastRefresh = $now;
       }
