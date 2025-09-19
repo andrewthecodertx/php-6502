@@ -80,6 +80,65 @@ cd php-6502
 composer install
 ```
 
+## 6502 Assembler
+
+### Assembly Language Programming
+
+The emulator includes a complete 6502 assembler for writing programs in assembly language instead of hand-coding opcodes.
+
+```bash
+# Assemble source to binary
+php asm.php assemble program.asm program.bin
+
+# Assemble and run program directly
+php asm.php run program.asm
+
+# Disassemble binary back to assembly
+php asm.php disasm program.bin 0x8000
+
+# Show label table from assembly
+php asm.php labels program.asm
+```
+
+### Assembly Language Features
+
+- **All 6502 addressing modes**: Immediate, Zero Page, Absolute, Indexed, Indirect
+- **Labels and references**: `main:`, `JMP main`, `BEQ loop`
+- **Data directives**: `.BYTE "Hello"`, `.WORD $8000`
+- **Origin directive**: `* = $8000`
+- **String literals**: `.BYTE "Hello, World!", $0A, $00`
+- **Comments**: `; This is a comment`
+
+### Example Assembly Program
+
+```assembly
+; Simple Hello World program
+* = $8000
+
+main:
+    LDA #$01        ; Clear screen command
+    STA $C3EC       ; Send to display control register
+
+    LDX #$00        ; Initialize string index
+
+print_loop:
+    LDA message,X   ; Load character from message
+    BEQ done        ; If zero, we're done
+    STA $D000       ; Output to console
+    INX             ; Next character
+    JMP print_loop  ; Continue loop
+
+done:
+    JMP done        ; Infinite loop (halt)
+
+message:
+    .BYTE "Hello, World!", $0A, $00
+
+; Set reset vector
+* = $FFFC
+.WORD main
+```
+
 ## Usage
 
 ### Basic CPU Operation
@@ -140,35 +199,47 @@ foreach ($activity as $i => $op) {
 
 ## Demo Programs
 
-The project includes several demonstration programs:
+### 🎮 Assembly-Based Interactive Demos
 
-### Reset Sequence Demos
+- **`interactive_demo.php`** - **Interactive menu to choose and run assembly programs**
+  - Select from multiple demo programs
+  - Each demo written in 6502 assembly language
+  - Real-time assembly and execution
 
-- **`reset_specification.php`** - Shows the official 6502 reset specification
-- **`accurate_reset_demo.php`** - Demonstrates hardware-accurate reset behavior
-- **`accurate_reset_simple.php`** - Simple reset with clean bus output
-- **`accurate_reset_bus_demo.php`** - Detailed reset with bus activity
+- **`auto_demo_asm.php`** - **Automatic showcase using assembly language**
+  - Demonstrates all system features automatically
+  - Written in pure 6502 assembly (examples/showcase.asm)
+  - Shows assembly programming capabilities
 
-### Bus Monitoring Demos
+### Available Assembly Programs
 
-- **`bus_monitor_demo.php`** - Basic bus monitoring demonstration
-- **`simple_bus_monitor.php`** - Simple bus activity display
-- **`final_bus_demo.php`** - Complete bus monitoring showcase
-- **`bus_trace.php`** - Detailed bus operation tracing
-- **`clock_monitor.php`** - Clock cycle monitoring
+- **`examples/hello.asm`** - Classic Hello World with string output
+- **`examples/welcome.asm`** - Colorful welcome message demonstration
+- **`examples/colors.asm`** - Cycles through all 16 text colors
+- **`examples/sound.asm`** - Plays melodies on multiple audio channels
+- **`examples/counter.asm`** - Live counting display from 0 to 99
+- **`examples/showcase.asm`** - Complete system feature demonstration
 
 ### Running Demos
 
 ```bash
-# View the 6502 reset specification
-php reset_specification.php
+# Run interactive demo menu (choose any program)
+php interactive_demo.php
 
-# See hardware-accurate reset sequence
-php accurate_reset_demo.php
+# Run automatic assembly-based showcase
+php auto_demo_asm.php
 
-# Monitor bus activity during operations
-php bus_monitor_demo.php
+# Run specific assembly programs directly
+php asm.php run examples/hello.asm
+php asm.php run examples/colors.asm
 ```
+
+**Features Demonstrated:**
+- ✅ MOS 6502 CPU with all instructions implemented
+- ✅ 64KB memory space with memory-mapped I/O
+- ✅ 40x25 text display with ANSI color support
+- ✅ 4-channel sound controller
+- ✅ Modular bus architecture ready for NES development
 
 ## Testing
 
