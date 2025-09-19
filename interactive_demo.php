@@ -193,13 +193,13 @@ function runProgram($assemblyFile)
   $cpu = new CPU($bus);
 
   foreach ($program as $addr => $byte) {
-    $memory->writeByte($addr, $byte);
+    $systemBus->write($addr, $byte);
   }
 
   if (!isset($program[0xFFFC]) && !isset($program[0xFFFD])) {
     $startAddr = min(array_keys($program));
-    $memory->writeByte(0xFFFC, $startAddr & 0xFF);
-    $memory->writeByte(0xFFFD, ($startAddr >> 8) & 0xFF);
+    $systemBus->write(0xFFFC, $startAddr & 0xFF);
+    $systemBus->write(0xFFFD, ($startAddr >> 8) & 0xFF);
     echo "🔄 Set reset vector to: 0x" . sprintf('%04X', $startAddr) . "\n";
   }
 
