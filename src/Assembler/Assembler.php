@@ -14,7 +14,7 @@ class Assembler
   /** @var array<int, int> */
   private array $program = [];
   private int $currentAddress = 0;
-  /** @var array<int, array{address: int, label: string, type: string}> */
+  /** @var array<int, array{address: int, label: string, line: int, mode: string, size: int}> */
   private array $unresolvedReferences = [];
 
   public function __construct()
@@ -136,6 +136,9 @@ class Assembler
   {
 
     $parts = preg_split('/\s+/', $line, 2);
+    if ($parts === false || empty($parts)) {
+      throw new AssemblerException("Invalid instruction format: $line");
+    }
     $mnemonic = strtoupper($parts[0]);
     $operand = isset($parts[1]) ? trim($parts[1]) : '';
 
@@ -202,7 +205,7 @@ class Assembler
 
     if (preg_match('/,X$/i', $operand)) {
       $base = preg_replace('/,X$/i', '', $operand);
-      if ($this->isZeroPage($base)) {
+      if ($base !== null && $this->isZeroPage($base)) {
         return 'X-Indexed Zero Page';
       } else {
         return 'X-Indexed Absolute';
@@ -211,7 +214,7 @@ class Assembler
 
     if (preg_match('/,Y$/i', $operand)) {
       $base = preg_replace('/,Y$/i', '', $operand);
-      if ($this->isZeroPage($base)) {
+      if ($base !== null && $this->isZeroPage($base)) {
         return 'Y-Indexed Zero Page';
       } else {
         return 'Y-Indexed Absolute';
@@ -247,12 +250,14 @@ class Assembler
     return false;
   }
 
-  private function generateInstruction($opcode, string $operand, int $lineNum): void
+  private function generateInstruction(\Emulator\Opcode $opcode, string $operand, int $lineNum): void
   {
     $opcodeValue = $opcode->getOpcode();
 
-    if (is_string($opcodeValue) && strpos($opcodeValue, '0x') === 0) {
-      $opcodeValue = hexdec(str_replace('0x', '', $opcodeValue));
+    if (strpos($opcodeValue, '0x') === 0) {
+      $opcodeValue = (int) hexdec(str_replace('0x', '', $opcodeValue));
+    } else {
+      $opcodeValue = (int) $opcodeValue;
     }
 
 
@@ -273,9 +278,6 @@ class Assembler
 
 
     foreach ($bytes as $byte) {
-      if (is_string($byte) && strpos($byte, '0x') === 0) {
-        $byte = hexdec(str_replace('0x', '', $byte));
-      }
       $this->program[$this->currentAddress] = $byte;
       $this->currentAddress++;
     }
@@ -364,7 +366,7 @@ class Assembler
       $value = trim($value);
 
       if (preg_match('/^\$([0-9A-Fa-f]+)$/i', $value, $matches)) {
-        $this->program[$this->currentAddress] = hexdec($matches[1]);
+        $this->program[$this->currentAddress] = (int) hexdec($matches[1]);
       } elseif (preg_match('/^([0-9]+)$/', $value)) {
         $this->program[$this->currentAddress] = intval($value);
       } else {
@@ -436,11 +438,13 @@ class Assembler
     }
   }
 
+  /** @return array<string, int> */
   public function getLabels(): array
   {
     return $this->labels;
   }
 
+  /** @param array<int, int> $program */
   public function disassemble(array $program, int $startAddress = 0): string
   {
     $output = [];
@@ -481,6 +485,7 @@ class Assembler
     return implode("\n", $output);
   }
 
+  /** @param array<int, int> $bytes */
   private function formatOperand(string $mode, array $bytes): string
   {
     switch ($mode) {
