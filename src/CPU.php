@@ -24,6 +24,7 @@ class CPU
   public int $register_y = 0;
   public int $cycles = 0;
   public StatusRegister $status;
+  public bool $halted = false;
 
   private InstructionRegister $instructionRegister;
   private array $instructionHandlers = [];
@@ -112,6 +113,21 @@ class CPU
   } while ($this->cycles > 0 || $this->pc == $startingPC);
   }
 
+  public function halt(): void
+  {
+  $this->halted = true;
+  }
+
+  public function resume(): void
+  {
+  $this->halted = false;
+  }
+
+  public function isHalted(): bool
+  {
+  return $this->halted;
+  }
+
   public function reset(): void
   {
   $currentPC = $this->pc;
@@ -134,6 +150,7 @@ class CPU
   $this->register_y = 0;
   $this->status->fromInt(0b00100100);
   $this->cycles = 0;
+  $this->halted = false;
   }
 
   public function accurateReset(): void

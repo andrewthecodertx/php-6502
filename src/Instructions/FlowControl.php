@@ -87,21 +87,8 @@ class FlowControl
   
   public function brk(Opcode $opcode): int
   {
-  
-  $this->cpu->pushWord($this->cpu->pc + 1);
-
-  
-  $status = $this->cpu->status->toInt() | (1 << StatusRegister::BREAK_COMMAND);
-  $this->cpu->pushByte($status);
-
-  
-  $this->cpu->status->set(StatusRegister::INTERRUPT_DISABLE, true);
-
-  
-  $interruptVector = $this->cpu->getMemory()->read_word(0xFFFE);
-  $this->cpu->pc = $interruptVector;
-
-  return $opcode->getCycles();
+    $this->cpu->halt();
+    return $opcode->getCycles();
   }
 
   public function rti(Opcode $opcode): int

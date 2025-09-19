@@ -219,7 +219,7 @@ function runProgram($assemblyFile)
     $lastPC = $cpu->pc;
     $stuckCount = 0;
 
-    while ($instructionCount < $maxInstructions) {
+    while ($instructionCount < $maxInstructions && !$cpu->isHalted()) {
       // Execute one instruction
       $cpu->executeInstruction();
       $instructionCount++;
