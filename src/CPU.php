@@ -38,9 +38,9 @@ class CPU
   private FlowControl $flowControlHandler;
   private Stack $stackHandler;
   private Flags $flagsHandler;
-
   private Memory $memory;
   private ?BusInterface $bus = null;
+  private bool $running = true;
 
   public function __construct(Memory|BusInterface $memoryOrBus)
   {
@@ -73,9 +73,14 @@ class CPU
 
   public function run(): void
   {
-    while (true) {
+    while ($this->running) {
       $this->step();
     }
+  }
+
+  public function stop(): void
+  {
+    $this->running = false;
   }
 
   public function step(): void
@@ -476,4 +481,3 @@ class CPU
     return $this->bus;
   }
 }
-
