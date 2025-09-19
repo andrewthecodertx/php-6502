@@ -80,12 +80,12 @@ class CPUTest extends TestCase
   
   $this->cpu->pushByte(0x42);
   $this->assertEquals(0xFE, $this->cpu->sp); 
-  $this->assertEquals(0x42, $this->memory->read_byte(0x01FF)); 
+  $this->assertEquals(0x42, $this->memory->readByte(0x01FF)); 
 
   
   $this->cpu->pushByte(0x84);
   $this->assertEquals(0xFD, $this->cpu->sp);
-  $this->assertEquals(0x84, $this->memory->read_byte(0x01FE));
+  $this->assertEquals(0x84, $this->memory->readByte(0x01FE));
 
   
   $pulled1 = $this->cpu->pullByte();
@@ -104,8 +104,8 @@ class CPUTest extends TestCase
   
   $this->cpu->pushWord(0x1234);
   $this->assertEquals(0xFD, $this->cpu->sp);
-  $this->assertEquals(0x12, $this->memory->read_byte(0x01FF)); 
-  $this->assertEquals(0x34, $this->memory->read_byte(0x01FE)); 
+  $this->assertEquals(0x12, $this->memory->readByte(0x01FF)); 
+  $this->assertEquals(0x34, $this->memory->readByte(0x01FE)); 
 
   
   $pulled = $this->cpu->pullWord();
@@ -119,7 +119,7 @@ class CPUTest extends TestCase
   $this->cpu->sp = 0x00;
   $this->cpu->pushByte(0x42);
   $this->assertEquals(0xFF, $this->cpu->sp); 
-  $this->assertEquals(0x42, $this->memory->read_byte(0x0100)); 
+  $this->assertEquals(0x42, $this->memory->readByte(0x0100)); 
 
   $this->cpu->sp = 0xFF;
   $pulled = $this->cpu->pullByte();
@@ -129,8 +129,8 @@ class CPUTest extends TestCase
   public function testStandardReset(): void
   {
   
-  $this->memory->write_byte(0xFFFC, 0x00); 
-  $this->memory->write_byte(0xFFFD, 0x80); 
+  $this->memory->writeByte(0xFFFC, 0x00); 
+  $this->memory->writeByte(0xFFFD, 0x80); 
 
   
   $this->cpu->pc = 0x1234;
@@ -154,8 +154,8 @@ class CPUTest extends TestCase
   public function testAccurateReset(): void
   {
   
-  $this->memory->write_byte(0xFFFC, 0x00);
-  $this->memory->write_byte(0xFFFD, 0x80);
+  $this->memory->writeByte(0xFFFC, 0x00);
+  $this->memory->writeByte(0xFFFD, 0x80);
 
   
   $this->cpu->pc = 0x1234;
@@ -179,7 +179,7 @@ class CPUTest extends TestCase
   public function testAddressingModeImmediate(): void
   {
   $this->cpu->pc = 0x8000;
-  $this->memory->write_byte(0x8000, 0x42);
+  $this->memory->writeByte(0x8000, 0x42);
 
   $address = $this->cpu->getAddress('Immediate');
   $this->assertEquals(0x8000, $address); 
@@ -189,7 +189,7 @@ class CPUTest extends TestCase
   public function testAddressingModeZeroPage(): void
   {
   $this->cpu->pc = 0x8000;
-  $this->memory->write_byte(0x8000, 0x42);
+  $this->memory->writeByte(0x8000, 0x42);
 
   $address = $this->cpu->getAddress('Zero Page');
   $this->assertEquals(0x42, $address);
@@ -200,7 +200,7 @@ class CPUTest extends TestCase
   {
   $this->cpu->pc = 0x8000;
   $this->cpu->setRegisterX(0x05);
-  $this->memory->write_byte(0x8000, 0x42);
+  $this->memory->writeByte(0x8000, 0x42);
 
   $address = $this->cpu->getAddress('X-Indexed Zero Page');
   $this->assertEquals(0x47, $address); 
@@ -211,7 +211,7 @@ class CPUTest extends TestCase
   {
   $this->cpu->pc = 0x8000;
   $this->cpu->setRegisterX(0x10);
-  $this->memory->write_byte(0x8000, 0xFF);
+  $this->memory->writeByte(0x8000, 0xFF);
 
   $address = $this->cpu->getAddress('X-Indexed Zero Page');
   $this->assertEquals(0x0F, $address); 
@@ -221,7 +221,7 @@ class CPUTest extends TestCase
   {
   $this->cpu->pc = 0x8000;
   $this->cpu->setRegisterY(0x05);
-  $this->memory->write_byte(0x8000, 0x42);
+  $this->memory->writeByte(0x8000, 0x42);
 
   $address = $this->cpu->getAddress('Y-Indexed Zero Page');
   $this->assertEquals(0x47, $address); 
@@ -231,8 +231,8 @@ class CPUTest extends TestCase
   public function testAddressingModeAbsolute(): void
   {
   $this->cpu->pc = 0x8000;
-  $this->memory->write_byte(0x8000, 0x34); 
-  $this->memory->write_byte(0x8001, 0x12); 
+  $this->memory->writeByte(0x8000, 0x34); 
+  $this->memory->writeByte(0x8001, 0x12); 
 
   $address = $this->cpu->getAddress('Absolute');
   $this->assertEquals(0x1234, $address);
@@ -243,8 +243,8 @@ class CPUTest extends TestCase
   {
   $this->cpu->pc = 0x8000;
   $this->cpu->setRegisterX(0x05);
-  $this->memory->write_byte(0x8000, 0x34);
-  $this->memory->write_byte(0x8001, 0x12);
+  $this->memory->writeByte(0x8000, 0x34);
+  $this->memory->writeByte(0x8001, 0x12);
 
   $address = $this->cpu->getAddress('X-Indexed Absolute');
   $this->assertEquals(0x1239, $address); 
@@ -255,8 +255,8 @@ class CPUTest extends TestCase
   {
   $this->cpu->pc = 0x8000;
   $this->cpu->setRegisterY(0x05);
-  $this->memory->write_byte(0x8000, 0x34);
-  $this->memory->write_byte(0x8001, 0x12);
+  $this->memory->writeByte(0x8000, 0x34);
+  $this->memory->writeByte(0x8001, 0x12);
 
   $address = $this->cpu->getAddress('Y-Indexed Absolute');
   $this->assertEquals(0x1239, $address); 
@@ -267,9 +267,9 @@ class CPUTest extends TestCase
   {
   $this->cpu->pc = 0x8000;
   $this->cpu->setRegisterX(0x05);
-  $this->memory->write_byte(0x8000, 0x20); 
-  $this->memory->write_byte(0x25, 0x34); 
-  $this->memory->write_byte(0x26, 0x12); 
+  $this->memory->writeByte(0x8000, 0x20); 
+  $this->memory->writeByte(0x25, 0x34); 
+  $this->memory->writeByte(0x26, 0x12); 
 
   $address = $this->cpu->getAddress('X-Indexed Zero Page Indirect');
   $this->assertEquals(0x1234, $address);
@@ -280,9 +280,9 @@ class CPUTest extends TestCase
   {
   $this->cpu->pc = 0x8000;
   $this->cpu->setRegisterY(0x05);
-  $this->memory->write_byte(0x8000, 0x20); 
-  $this->memory->write_byte(0x20, 0x34); 
-  $this->memory->write_byte(0x21, 0x12); 
+  $this->memory->writeByte(0x8000, 0x20); 
+  $this->memory->writeByte(0x20, 0x34); 
+  $this->memory->writeByte(0x21, 0x12); 
 
   $address = $this->cpu->getAddress('Zero Page Indirect Y-Indexed');
   $this->assertEquals(0x1239, $address); 
@@ -292,10 +292,10 @@ class CPUTest extends TestCase
   public function testAddressingModeAbsoluteIndirect(): void
   {
   $this->cpu->pc = 0x8000;
-  $this->memory->write_byte(0x8000, 0x20); 
-  $this->memory->write_byte(0x8001, 0x30); 
-  $this->memory->write_byte(0x3020, 0x34); 
-  $this->memory->write_byte(0x3021, 0x12); 
+  $this->memory->writeByte(0x8000, 0x20); 
+  $this->memory->writeByte(0x8001, 0x30); 
+  $this->memory->writeByte(0x3020, 0x34); 
+  $this->memory->writeByte(0x3021, 0x12); 
 
   $address = $this->cpu->getAddress('Absolute Indirect');
   $this->assertEquals(0x1234, $address);
@@ -306,10 +306,10 @@ class CPUTest extends TestCase
   {
   
   $this->cpu->pc = 0x8000;
-  $this->memory->write_byte(0x8000, 0xFF); 
-  $this->memory->write_byte(0x8001, 0x30); 
-  $this->memory->write_byte(0x30FF, 0x34); 
-  $this->memory->write_byte(0x3000, 0x12); 
+  $this->memory->writeByte(0x8000, 0xFF); 
+  $this->memory->writeByte(0x8001, 0x30); 
+  $this->memory->writeByte(0x30FF, 0x34); 
+  $this->memory->writeByte(0x3000, 0x12); 
 
   $address = $this->cpu->getAddress('Absolute Indirect');
   $this->assertEquals(0x1234, $address); 
@@ -319,7 +319,7 @@ class CPUTest extends TestCase
   public function testAddressingModeRelative(): void
   {
   $this->cpu->pc = 0x8000;
-  $this->memory->write_byte(0x8000, 0x05); 
+  $this->memory->writeByte(0x8000, 0x05); 
 
   $offset = $this->cpu->getAddress('Relative');
   $this->assertEquals(0x05, $offset); 
@@ -329,7 +329,7 @@ class CPUTest extends TestCase
   public function testAddressingModeRelativeNegative(): void
   {
   $this->cpu->pc = 0x8000;
-  $this->memory->write_byte(0x8000, 0xFB); 
+  $this->memory->writeByte(0x8000, 0xFB); 
 
   $offset = $this->cpu->getAddress('Relative');
   $this->assertEquals(0xFB, $offset); 

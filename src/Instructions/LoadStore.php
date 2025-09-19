@@ -15,7 +15,7 @@ class LoadStore
   public function lda(Opcode $opcode): int
   {
     $address = $this->cpu->getAddress($opcode->getAddressingMode());
-    $value = $this->cpu->getMemory()->read_byte($address);
+    $value = $this->cpu->getMemory()->readByte($address);
     $this->cpu->setAccumulator($value);
 
     $this->cpu->status->set(StatusRegister::ZERO, $value === 0);
@@ -27,7 +27,7 @@ class LoadStore
   public function sta(Opcode $opcode): int
   {
     $address = $this->cpu->getAddress($opcode->getAddressingMode());
-    $this->cpu->getMemory()->write_byte($address, $this->cpu->getAccumulator());
+    $this->cpu->getMemory()->writeByte($address, $this->cpu->getAccumulator());
 
     return $opcode->getCycles();
   }
@@ -35,7 +35,7 @@ class LoadStore
   public function ldx(Opcode $opcode): int
   {
     $address = $this->cpu->getAddress($opcode->getAddressingMode());
-    $value = $this->cpu->getMemory()->read_byte($address);
+    $value = $this->cpu->getMemory()->readByte($address);
     $this->cpu->setRegisterX($value);
 
     $this->cpu->status->set(StatusRegister::ZERO, $value === 0);
@@ -47,7 +47,7 @@ class LoadStore
   public function ldy(Opcode $opcode): int
   {
     $address = $this->cpu->getAddress($opcode->getAddressingMode());
-    $value = $this->cpu->getMemory()->read_byte($address);
+    $value = $this->cpu->getMemory()->readByte($address);
     $this->cpu->setRegisterY($value);
 
     $this->cpu->status->set(StatusRegister::ZERO, $value === 0);
@@ -59,7 +59,7 @@ class LoadStore
   public function stx(Opcode $opcode): int
   {
     $address = $this->cpu->getAddress($opcode->getAddressingMode());
-    $this->cpu->getMemory()->write_byte($address, $this->cpu->getRegisterX());
+    $this->cpu->getMemory()->writeByte($address, $this->cpu->getRegisterX());
 
     return $opcode->getCycles();
   }
@@ -67,7 +67,7 @@ class LoadStore
   public function sty(Opcode $opcode): int
   {
     $address = $this->cpu->getAddress($opcode->getAddressingMode());
-    $this->cpu->getMemory()->write_byte($address, $this->cpu->getRegisterY());
+    $this->cpu->getMemory()->writeByte($address, $this->cpu->getRegisterY());
 
     return $opcode->getCycles();
   }

@@ -15,7 +15,7 @@ class Logic
   public function and(Opcode $opcode): int
   {
     $address = $this->cpu->getAddress($opcode->getAddressingMode());
-    $value = $this->cpu->getMemory()->read_byte($address);
+    $value = $this->cpu->getMemory()->readByte($address);
     $result = $this->cpu->getAccumulator() & $value;
 
     $this->cpu->setAccumulator($result);
@@ -30,7 +30,7 @@ class Logic
   public function ora(Opcode $opcode): int
   {
     $address = $this->cpu->getAddress($opcode->getAddressingMode());
-    $value = $this->cpu->getMemory()->read_byte($address);
+    $value = $this->cpu->getMemory()->readByte($address);
     $result = $this->cpu->getAccumulator() | $value;
 
     $this->cpu->setAccumulator($result);
@@ -45,7 +45,7 @@ class Logic
   public function eor(Opcode $opcode): int
   {
     $address = $this->cpu->getAddress($opcode->getAddressingMode());
-    $value = $this->cpu->getMemory()->read_byte($address);
+    $value = $this->cpu->getMemory()->readByte($address);
     $result = $this->cpu->getAccumulator() ^ $value;
 
     $this->cpu->setAccumulator($result);
@@ -60,7 +60,7 @@ class Logic
   public function bit(Opcode $opcode): int
   {
     $address = $this->cpu->getAddress($opcode->getAddressingMode());
-    $value = $this->cpu->getMemory()->read_byte($address);
+    $value = $this->cpu->getMemory()->readByte($address);
     $result = $this->cpu->getAccumulator() & $value;
 
 

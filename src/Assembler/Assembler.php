@@ -9,9 +9,12 @@ use Emulator\InstructionRegister;
 class Assembler
 {
   private InstructionRegister $instructionRegister;
+  /** @var array<string, int> */
   private array $labels = [];
+  /** @var array<int, int> */
   private array $program = [];
   private int $currentAddress = 0;
+  /** @var array<int, array{address: int, label: string, type: string}> */
   private array $unresolvedReferences = [];
 
   public function __construct()
@@ -19,6 +22,7 @@ class Assembler
     $this->instructionRegister = new InstructionRegister();
   }
 
+  /** @return array<int, int> */
   public function assemble(string $source): array
   {
     $this->reset();
@@ -33,6 +37,7 @@ class Assembler
     return $this->program;
   }
 
+  /** @return array<int, int> */
   public function assembleFile(string $filename): array
   {
     if (!file_exists($filename)) {
@@ -40,6 +45,9 @@ class Assembler
     }
 
     $source = file_get_contents($filename);
+    if ($source === false) {
+      throw new \RuntimeException("Failed to read file: $filename");
+    }
     return $this->assemble($source);
   }
 
@@ -51,6 +59,7 @@ class Assembler
     $this->unresolvedReferences = [];
   }
 
+  /** @return array<int, array{line: string, number: int, original: string}> */
   private function preprocessSource(string $source): array
   {
     $lines = explode("\n", $source);
@@ -59,6 +68,9 @@ class Assembler
     foreach ($lines as $lineNum => $line) {
 
       $line = preg_replace('/;.*$/', '', $line);
+      if ($line === null) {
+        continue;
+      }
 
 
       $line = trim($line);
@@ -78,6 +90,7 @@ class Assembler
     return $processed;
   }
 
+  /** @param array<int, array{line: string, number: int, original: string}> $lines */
   private function firstPass(array $lines): void
   {
     foreach ($lines as $lineData) {
@@ -98,7 +111,7 @@ class Assembler
   {
 
     if (preg_match('/^\*\s*=\s*\$([0-9A-Fa-f]+)/', $line, $matches)) {
-      $this->currentAddress = hexdec($matches[1]);
+      $this->currentAddress = (int) hexdec($matches[1]);
       return;
     }
 
@@ -272,7 +285,7 @@ class Assembler
   {
 
     if (preg_match('/^#\$?([0-9A-Fa-f]+)$/i', $operand, $matches)) {
-      return hexdec($matches[1]);
+      return (int) hexdec($matches[1]);
     }
 
 
@@ -282,7 +295,7 @@ class Assembler
 
 
     if (preg_match('/^\$([0-9A-Fa-f]+)$/i', $operand, $matches)) {
-      return hexdec($matches[1]);
+      return (int) hexdec($matches[1]);
     }
 
 

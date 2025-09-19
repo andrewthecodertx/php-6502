@@ -33,7 +33,7 @@ class SystemBus implements BusInterface
     }
 
 
-    return $this->memory->read_byte($address);
+    return $this->memory->readByte($address);
   }
 
   public function write(int $address, int $value): void
@@ -50,7 +50,7 @@ class SystemBus implements BusInterface
     }
 
 
-    $this->memory->write_byte($address, $value);
+    $this->memory->writeByte($address, $value);
   }
 
   public function tick(): void

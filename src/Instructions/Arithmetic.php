@@ -15,7 +15,7 @@ class Arithmetic
   public function adc(Opcode $opcode): int
   {
     $address = $this->cpu->getAddress($opcode->getAddressingMode());
-    $value = $this->cpu->getMemory()->read_byte($address);
+    $value = $this->cpu->getMemory()->readByte($address);
     $accumulator = $this->cpu->getAccumulator();
     $carry = $this->cpu->status->get(StatusRegister::CARRY) ? 1 : 0;
 
@@ -38,7 +38,7 @@ class Arithmetic
   public function sbc(Opcode $opcode): int
   {
     $address = $this->cpu->getAddress($opcode->getAddressingMode());
-    $value = $this->cpu->getMemory()->read_byte($address);
+    $value = $this->cpu->getMemory()->readByte($address);
     $accumulator = $this->cpu->getAccumulator();
     $carry = $this->cpu->status->get(StatusRegister::CARRY) ? 1 : 0;
 
@@ -62,7 +62,7 @@ class Arithmetic
   public function cmp(Opcode $opcode): int
   {
     $address = $this->cpu->getAddress($opcode->getAddressingMode());
-    $value = $this->cpu->getMemory()->read_byte($address);
+    $value = $this->cpu->getMemory()->readByte($address);
     $accumulator = $this->cpu->getAccumulator();
 
     $result = $accumulator - $value;
@@ -78,7 +78,7 @@ class Arithmetic
   public function cpx(Opcode $opcode): int
   {
     $address = $this->cpu->getAddress($opcode->getAddressingMode());
-    $value = $this->cpu->getMemory()->read_byte($address);
+    $value = $this->cpu->getMemory()->readByte($address);
     $registerX = $this->cpu->getRegisterX();
 
     $result = $registerX - $value;
@@ -94,7 +94,7 @@ class Arithmetic
   public function cpy(Opcode $opcode): int
   {
     $address = $this->cpu->getAddress($opcode->getAddressingMode());
-    $value = $this->cpu->getMemory()->read_byte($address);
+    $value = $this->cpu->getMemory()->readByte($address);
     $registerY = $this->cpu->getRegisterY();
 
     $result = $registerY - $value;

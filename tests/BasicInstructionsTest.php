@@ -30,8 +30,8 @@ class BasicInstructionsTest extends TestCase
   public function testLDXImmediate(): void
   {
   
-  $this->memory->write_byte(0x8000, 0xA2); 
-  $this->memory->write_byte(0x8001, 0x42); 
+  $this->memory->writeByte(0x8000, 0xA2); 
+  $this->memory->writeByte(0x8001, 0x42); 
 
   $this->cpu->pc = 0x8000;
   $this->cpu->step();
@@ -45,8 +45,8 @@ class BasicInstructionsTest extends TestCase
   public function testLDXZero(): void
   {
   
-  $this->memory->write_byte(0x8000, 0xA2); 
-  $this->memory->write_byte(0x8001, 0x00);
+  $this->memory->writeByte(0x8000, 0xA2); 
+  $this->memory->writeByte(0x8001, 0x00);
 
   $this->cpu->pc = 0x8000;
   $this->cpu->step();
@@ -59,8 +59,8 @@ class BasicInstructionsTest extends TestCase
   public function testLDXNegative(): void
   {
   
-  $this->memory->write_byte(0x8000, 0xA2); 
-  $this->memory->write_byte(0x8001, 0x80); 
+  $this->memory->writeByte(0x8000, 0xA2); 
+  $this->memory->writeByte(0x8001, 0x80); 
 
   $this->cpu->pc = 0x8000;
   $this->cpu->step();
@@ -73,8 +73,8 @@ class BasicInstructionsTest extends TestCase
   public function testLDYImmediate(): void
   {
   
-  $this->memory->write_byte(0x8000, 0xA0); 
-  $this->memory->write_byte(0x8001, 0x84); 
+  $this->memory->writeByte(0x8000, 0xA0); 
+  $this->memory->writeByte(0x8001, 0x84); 
 
   $this->cpu->pc = 0x8000;
   $this->cpu->step();
@@ -88,9 +88,9 @@ class BasicInstructionsTest extends TestCase
   public function testLDXZeroPage(): void
   {
   
-  $this->memory->write_byte(0x80, 0x42); 
-  $this->memory->write_byte(0x8000, 0xA6); 
-  $this->memory->write_byte(0x8001, 0x80); 
+  $this->memory->writeByte(0x80, 0x42); 
+  $this->memory->writeByte(0x8000, 0xA6); 
+  $this->memory->writeByte(0x8001, 0x80); 
 
   $this->cpu->pc = 0x8000;
   $this->cpu->step();
@@ -102,9 +102,9 @@ class BasicInstructionsTest extends TestCase
   public function testLDYZeroPage(): void
   {
   
-  $this->memory->write_byte(0x80, 0x84); 
-  $this->memory->write_byte(0x8000, 0xA4); 
-  $this->memory->write_byte(0x8001, 0x80); 
+  $this->memory->writeByte(0x80, 0x84); 
+  $this->memory->writeByte(0x8000, 0xA4); 
+  $this->memory->writeByte(0x8001, 0x80); 
 
   $this->cpu->pc = 0x8000;
   $this->cpu->step();
@@ -119,13 +119,13 @@ class BasicInstructionsTest extends TestCase
   $this->cpu->setRegisterX(0x42);
 
   
-  $this->memory->write_byte(0x8000, 0x86); 
-  $this->memory->write_byte(0x8001, 0x80); 
+  $this->memory->writeByte(0x8000, 0x86); 
+  $this->memory->writeByte(0x8001, 0x80); 
 
   $this->cpu->pc = 0x8000;
   $this->cpu->step();
 
-  $this->assertEquals(0x42, $this->memory->read_byte(0x80));
+  $this->assertEquals(0x42, $this->memory->readByte(0x80));
   $this->assertEquals(0x8002, $this->cpu->pc);
   }
 
@@ -135,13 +135,13 @@ class BasicInstructionsTest extends TestCase
   $this->cpu->setRegisterY(0x84);
 
   
-  $this->memory->write_byte(0x8000, 0x84); 
-  $this->memory->write_byte(0x8001, 0x80); 
+  $this->memory->writeByte(0x8000, 0x84); 
+  $this->memory->writeByte(0x8001, 0x80); 
 
   $this->cpu->pc = 0x8000;
   $this->cpu->step();
 
-  $this->assertEquals(0x84, $this->memory->read_byte(0x80));
+  $this->assertEquals(0x84, $this->memory->readByte(0x80));
   $this->assertEquals(0x8002, $this->cpu->pc);
   }
 
@@ -151,7 +151,7 @@ class BasicInstructionsTest extends TestCase
   $this->cpu->setAccumulator(0x42);
 
   
-  $this->memory->write_byte(0x8000, 0xAA); 
+  $this->memory->writeByte(0x8000, 0xAA); 
 
   $this->cpu->pc = 0x8000;
   $this->cpu->step();
@@ -168,7 +168,7 @@ class BasicInstructionsTest extends TestCase
   
   $this->cpu->setAccumulator(0x00);
 
-  $this->memory->write_byte(0x8000, 0xAA); 
+  $this->memory->writeByte(0x8000, 0xAA); 
 
   $this->cpu->pc = 0x8000;
   $this->cpu->step();
@@ -184,7 +184,7 @@ class BasicInstructionsTest extends TestCase
   $this->cpu->setAccumulator(0x84);
 
   
-  $this->memory->write_byte(0x8000, 0xA8); 
+  $this->memory->writeByte(0x8000, 0xA8); 
 
   $this->cpu->pc = 0x8000;
   $this->cpu->step();
@@ -202,7 +202,7 @@ class BasicInstructionsTest extends TestCase
   $this->cpu->setRegisterX(0x42);
 
   
-  $this->memory->write_byte(0x8000, 0x8A); 
+  $this->memory->writeByte(0x8000, 0x8A); 
 
   $this->cpu->pc = 0x8000;
   $this->cpu->step();
@@ -220,7 +220,7 @@ class BasicInstructionsTest extends TestCase
   $this->cpu->setRegisterY(0x80);
 
   
-  $this->memory->write_byte(0x8000, 0x98); 
+  $this->memory->writeByte(0x8000, 0x98); 
 
   $this->cpu->pc = 0x8000;
   $this->cpu->step();
@@ -238,7 +238,7 @@ class BasicInstructionsTest extends TestCase
   $this->cpu->sp = 0xFD;
 
   
-  $this->memory->write_byte(0x8000, 0xBA); 
+  $this->memory->writeByte(0x8000, 0xBA); 
 
   $this->cpu->pc = 0x8000;
   $this->cpu->step();
@@ -256,7 +256,7 @@ class BasicInstructionsTest extends TestCase
   $this->cpu->setRegisterX(0xFF);
 
   
-  $this->memory->write_byte(0x8000, 0x9A); 
+  $this->memory->writeByte(0x8000, 0x9A); 
 
   $this->cpu->pc = 0x8000;
   $this->cpu->step();
@@ -270,10 +270,10 @@ class BasicInstructionsTest extends TestCase
   public function testLDXAbsolute(): void
   {
   
-  $this->memory->write_byte(0x1234, 0x42); 
-  $this->memory->write_byte(0x8000, 0xAE); 
-  $this->memory->write_byte(0x8001, 0x34); 
-  $this->memory->write_byte(0x8002, 0x12); 
+  $this->memory->writeByte(0x1234, 0x42); 
+  $this->memory->writeByte(0x8000, 0xAE); 
+  $this->memory->writeByte(0x8001, 0x34); 
+  $this->memory->writeByte(0x8002, 0x12); 
 
   $this->cpu->pc = 0x8000;
   $this->cpu->step();
@@ -285,10 +285,10 @@ class BasicInstructionsTest extends TestCase
   public function testLDYAbsolute(): void
   {
   
-  $this->memory->write_byte(0x1234, 0x84); 
-  $this->memory->write_byte(0x8000, 0xAC); 
-  $this->memory->write_byte(0x8001, 0x34); 
-  $this->memory->write_byte(0x8002, 0x12); 
+  $this->memory->writeByte(0x1234, 0x84); 
+  $this->memory->writeByte(0x8000, 0xAC); 
+  $this->memory->writeByte(0x8001, 0x34); 
+  $this->memory->writeByte(0x8002, 0x12); 
 
   $this->cpu->pc = 0x8000;
   $this->cpu->step();
@@ -303,19 +303,19 @@ class BasicInstructionsTest extends TestCase
   $this->cpu->setAccumulator(0x42);
 
   
-  $this->memory->write_byte(0x8000, 0xAA);
+  $this->memory->writeByte(0x8000, 0xAA);
   $this->cpu->pc = 0x8000;
   $this->executeCompleteInstruction();
   $this->assertEquals(0x42, $this->cpu->getRegisterX());
 
   
-  $this->memory->write_byte(0x8001, 0xA8);
+  $this->memory->writeByte(0x8001, 0xA8);
   $this->executeCompleteInstruction();
   $this->assertEquals(0x42, $this->cpu->getRegisterY());
 
   
-  $this->memory->write_byte(0x8002, 0xA9);
-  $this->memory->write_byte(0x8003, 0x84);
+  $this->memory->writeByte(0x8002, 0xA9);
+  $this->memory->writeByte(0x8003, 0x84);
 
   $this->executeCompleteInstruction();
 
@@ -324,7 +324,7 @@ class BasicInstructionsTest extends TestCase
   $this->assertEquals(0x42, $this->cpu->getRegisterY()); 
 
   
-  $this->memory->write_byte(0x8004, 0x8A);
+  $this->memory->writeByte(0x8004, 0x8A);
   $this->executeCompleteInstruction();
   $this->assertEquals(0x42, $this->cpu->getAccumulator());
   }
@@ -335,7 +335,7 @@ class BasicInstructionsTest extends TestCase
   $this->cpu->sp = 0x80;
 
   
-  $this->memory->write_byte(0x8000, 0xBA);
+  $this->memory->writeByte(0x8000, 0xBA);
   $this->cpu->pc = 0x8000;
   $this->executeCompleteInstruction();
   $this->assertEquals(0x80, $this->cpu->getRegisterX());
@@ -344,7 +344,7 @@ class BasicInstructionsTest extends TestCase
   $this->cpu->setRegisterX(0x90);
 
   
-  $this->memory->write_byte(0x8001, 0x9A);
+  $this->memory->writeByte(0x8001, 0x9A);
   $this->executeCompleteInstruction();
   $this->assertEquals(0x90, $this->cpu->sp);
   }

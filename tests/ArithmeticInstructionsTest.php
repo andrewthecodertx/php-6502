@@ -33,8 +33,8 @@ class ArithmeticInstructionsTest extends TestCase
   $this->cpu->setAccumulator(0x20);
   $this->cpu->status->set(StatusRegister::CARRY, false);
 
-  $this->memory->write_byte(0x8000, 0x69); 
-  $this->memory->write_byte(0x8001, 0x30); 
+  $this->memory->writeByte(0x8000, 0x69); 
+  $this->memory->writeByte(0x8001, 0x30); 
 
   $this->cpu->pc = 0x8000;
   $this->executeCompleteInstruction();
@@ -52,8 +52,8 @@ class ArithmeticInstructionsTest extends TestCase
   $this->cpu->setAccumulator(0x20);
   $this->cpu->status->set(StatusRegister::CARRY, true);
 
-  $this->memory->write_byte(0x8000, 0x69); 
-  $this->memory->write_byte(0x8001, 0x30);
+  $this->memory->writeByte(0x8000, 0x69); 
+  $this->memory->writeByte(0x8001, 0x30);
 
   $this->cpu->pc = 0x8000;
   $this->executeCompleteInstruction();
@@ -67,8 +67,8 @@ class ArithmeticInstructionsTest extends TestCase
   $this->cpu->setAccumulator(0xFF);
   $this->cpu->status->set(StatusRegister::CARRY, false);
 
-  $this->memory->write_byte(0x8000, 0x69); 
-  $this->memory->write_byte(0x8001, 0x01);
+  $this->memory->writeByte(0x8000, 0x69); 
+  $this->memory->writeByte(0x8001, 0x01);
 
   $this->cpu->pc = 0x8000;
   $this->executeCompleteInstruction();
@@ -84,8 +84,8 @@ class ArithmeticInstructionsTest extends TestCase
   $this->cpu->setAccumulator(0x7F); 
   $this->cpu->status->set(StatusRegister::CARRY, false);
 
-  $this->memory->write_byte(0x8000, 0x69); 
-  $this->memory->write_byte(0x8001, 0x01); 
+  $this->memory->writeByte(0x8000, 0x69); 
+  $this->memory->writeByte(0x8001, 0x01); 
 
   $this->cpu->pc = 0x8000;
   $this->executeCompleteInstruction();
@@ -101,8 +101,8 @@ class ArithmeticInstructionsTest extends TestCase
   $this->cpu->setAccumulator(0x50);
   $this->cpu->status->set(StatusRegister::CARRY, true);
 
-  $this->memory->write_byte(0x8000, 0xE9); 
-  $this->memory->write_byte(0x8001, 0x20); 
+  $this->memory->writeByte(0x8000, 0xE9); 
+  $this->memory->writeByte(0x8001, 0x20); 
 
   $this->cpu->pc = 0x8000;
   $this->executeCompleteInstruction();
@@ -119,8 +119,8 @@ class ArithmeticInstructionsTest extends TestCase
   $this->cpu->setAccumulator(0x20);
   $this->cpu->status->set(StatusRegister::CARRY, false); 
 
-  $this->memory->write_byte(0x8000, 0xE9); 
-  $this->memory->write_byte(0x8001, 0x10);
+  $this->memory->writeByte(0x8000, 0xE9); 
+  $this->memory->writeByte(0x8001, 0x10);
 
   $this->cpu->pc = 0x8000;
   $this->executeCompleteInstruction();
@@ -133,8 +133,8 @@ class ArithmeticInstructionsTest extends TestCase
   
   $this->cpu->setAccumulator(0x42);
 
-  $this->memory->write_byte(0x8000, 0xC9); 
-  $this->memory->write_byte(0x8001, 0x42); 
+  $this->memory->writeByte(0x8000, 0xC9); 
+  $this->memory->writeByte(0x8001, 0x42); 
 
   $this->cpu->pc = 0x8000;
   $this->executeCompleteInstruction();
@@ -150,8 +150,8 @@ class ArithmeticInstructionsTest extends TestCase
   
   $this->cpu->setAccumulator(0x50);
 
-  $this->memory->write_byte(0x8000, 0xC9); 
-  $this->memory->write_byte(0x8001, 0x30);
+  $this->memory->writeByte(0x8000, 0xC9); 
+  $this->memory->writeByte(0x8001, 0x30);
 
   $this->cpu->pc = 0x8000;
   $this->executeCompleteInstruction();
@@ -165,8 +165,8 @@ class ArithmeticInstructionsTest extends TestCase
   
   $this->cpu->setAccumulator(0x30);
 
-  $this->memory->write_byte(0x8000, 0xC9); 
-  $this->memory->write_byte(0x8001, 0x50);
+  $this->memory->writeByte(0x8000, 0xC9); 
+  $this->memory->writeByte(0x8001, 0x50);
 
   $this->cpu->pc = 0x8000;
   $this->executeCompleteInstruction();
@@ -181,8 +181,8 @@ class ArithmeticInstructionsTest extends TestCase
   
   $this->cpu->setRegisterX(0x42);
 
-  $this->memory->write_byte(0x8000, 0xE0); 
-  $this->memory->write_byte(0x8001, 0x42);
+  $this->memory->writeByte(0x8000, 0xE0); 
+  $this->memory->writeByte(0x8001, 0x42);
 
   $this->cpu->pc = 0x8000;
   $this->executeCompleteInstruction();
@@ -197,8 +197,8 @@ class ArithmeticInstructionsTest extends TestCase
   
   $this->cpu->setRegisterY(0x84);
 
-  $this->memory->write_byte(0x8000, 0xC0); 
-  $this->memory->write_byte(0x8001, 0x42);
+  $this->memory->writeByte(0x8000, 0xC0); 
+  $this->memory->writeByte(0x8001, 0x42);
 
   $this->cpu->pc = 0x8000;
   $this->executeCompleteInstruction();

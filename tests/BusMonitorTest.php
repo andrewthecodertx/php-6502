@@ -30,10 +30,10 @@ class BusMonitorTest extends TestCase
 
   public function testMemoryReadMonitoring(): void
   {
-  $this->memory->write_byte(0x1000, 0x42);
+  $this->memory->writeByte(0x1000, 0x42);
   $this->busMonitor->reset(); 
 
-  $value = $this->memory->read_byte(0x1000);
+  $value = $this->memory->readByte(0x1000);
   $this->assertEquals(0x42, $value);
 
   $activity = $this->busMonitor->getBusActivity();
@@ -47,7 +47,7 @@ class BusMonitorTest extends TestCase
 
   public function testMemoryWriteMonitoring(): void
   {
-  $this->memory->write_byte(0x1000, 0x84);
+  $this->memory->writeByte(0x1000, 0x84);
 
   $activity = $this->busMonitor->getBusActivity();
   $this->assertCount(1, $activity);
@@ -60,10 +60,10 @@ class BusMonitorTest extends TestCase
 
   public function testMultipleOperationsMonitoring(): void
   {
-  $this->memory->write_byte(0x1000, 0x42);
-  $this->memory->write_byte(0x1001, 0x84);
-  $this->memory->read_byte(0x1000);
-  $this->memory->read_byte(0x1001);
+  $this->memory->writeByte(0x1000, 0x42);
+  $this->memory->writeByte(0x1001, 0x84);
+  $this->memory->readByte(0x1000);
+  $this->memory->readByte(0x1001);
 
   $activity = $this->busMonitor->getBusActivity();
   $this->assertCount(4, $activity);
@@ -89,7 +89,7 @@ class BusMonitorTest extends TestCase
 
   public function testWordOperationsMonitoring(): void
   {
-  $this->memory->write_word(0x1000, 0x1234);
+  $this->memory->writeWord(0x1000, 0x1234);
 
   $activity = $this->busMonitor->getBusActivity();
   $this->assertCount(2, $activity); 
@@ -106,8 +106,8 @@ class BusMonitorTest extends TestCase
 
   public function testBusMonitorReset(): void
   {
-  $this->memory->write_byte(0x1000, 0x42);
-  $this->memory->read_byte(0x1000);
+  $this->memory->writeByte(0x1000, 0x42);
+  $this->memory->readByte(0x1000);
 
   $this->assertCount(2, $this->busMonitor->getBusActivity());
 
@@ -149,8 +149,8 @@ class BusMonitorTest extends TestCase
   $cpu = new MonitoredCPU($this->memory, false);
 
   
-  $this->memory->write_byte(0xFFFC, 0x00);
-  $this->memory->write_byte(0xFFFD, 0x80);
+  $this->memory->writeByte(0xFFFC, 0x00);
+  $this->memory->writeByte(0xFFFD, 0x80);
 
   $this->busMonitor->reset();
   $cpu->reset(); 
@@ -221,15 +221,15 @@ class BusMonitorTest extends TestCase
   public function testZeroPageOperationsMonitoring(): void
   {
   
-  $this->memory->write_byte(0x00, 0x11);
-  $this->memory->write_byte(0x80, 0x22);
-  $this->memory->write_byte(0xFF, 0x33);
+  $this->memory->writeByte(0x00, 0x11);
+  $this->memory->writeByte(0x80, 0x22);
+  $this->memory->writeByte(0xFF, 0x33);
 
   $this->busMonitor->reset();
 
-  $this->memory->read_byte(0x00);
-  $this->memory->read_byte(0x80);
-  $this->memory->read_byte(0xFF);
+  $this->memory->readByte(0x00);
+  $this->memory->readByte(0x80);
+  $this->memory->readByte(0xFF);
 
   $activity = $this->busMonitor->getBusActivity();
   $this->assertCount(3, $activity);
@@ -245,13 +245,13 @@ class BusMonitorTest extends TestCase
   public function testHighMemoryOperationsMonitoring(): void
   {
   
-  $this->memory->write_byte(0xFFFE, 0xAA);
-  $this->memory->write_byte(0xFFFF, 0xBB);
+  $this->memory->writeByte(0xFFFE, 0xAA);
+  $this->memory->writeByte(0xFFFF, 0xBB);
 
   $this->busMonitor->reset();
 
-  $this->memory->read_byte(0xFFFE);
-  $this->memory->read_byte(0xFFFF);
+  $this->memory->readByte(0xFFFE);
+  $this->memory->readByte(0xFFFF);
 
   $activity = $this->busMonitor->getBusActivity();
   $this->assertCount(2, $activity);

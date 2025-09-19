@@ -40,14 +40,14 @@ class DisplayIntegrationTest extends TestCase
 
   public function testTextDisplayMemoryMappedIO(): void
   {
-   $this->memory->write_byte(0x8000, 0xA9);
-   $this->memory->write_byte(0x8001, 0x48);
-   $this->memory->write_byte(0x8002, 0x8D);
-   $this->memory->write_byte(0x8003, 0x00);
-   $this->memory->write_byte(0x8004, 0xC0);
+   $this->memory->writeByte(0x8000, 0xA9);
+   $this->memory->writeByte(0x8001, 0x48);
+   $this->memory->writeByte(0x8002, 0x8D);
+   $this->memory->writeByte(0x8003, 0x00);
+   $this->memory->writeByte(0x8004, 0xC0);
 
-   $this->memory->write_byte(0xFFFC, 0x00);
-   $this->memory->write_byte(0xFFFD, 0x80);
+   $this->memory->writeByte(0xFFFC, 0x00);
+   $this->memory->writeByte(0xFFFD, 0x80);
 
    $this->cpu->reset();
 
@@ -62,14 +62,14 @@ class DisplayIntegrationTest extends TestCase
 
   public function testEnhancedConsoleMemoryMappedIO(): void
   {
-   $this->memory->write_byte(0x8000, 0xA9);
-   $this->memory->write_byte(0x8001, 0x41);
-   $this->memory->write_byte(0x8002, 0x8D);
-   $this->memory->write_byte(0x8003, 0x00);
-   $this->memory->write_byte(0x8004, 0xD0);
+   $this->memory->writeByte(0x8000, 0xA9);
+   $this->memory->writeByte(0x8001, 0x41);
+   $this->memory->writeByte(0x8002, 0x8D);
+   $this->memory->writeByte(0x8003, 0x00);
+   $this->memory->writeByte(0x8004, 0xD0);
 
-   $this->memory->write_byte(0xFFFC, 0x00);
-   $this->memory->write_byte(0xFFFD, 0x80);
+   $this->memory->writeByte(0xFFFC, 0x00);
+   $this->memory->writeByte(0xFFFD, 0x80);
 
    $this->cpu->reset();
 
@@ -141,11 +141,11 @@ class DisplayIntegrationTest extends TestCase
 
    $address = 0x8000;
    foreach ($program as $byte) {
-   $this->memory->write_byte($address++, $byte);
+   $this->memory->writeByte($address++, $byte);
    }
 
-   $this->memory->write_byte(0xFFFC, 0x00);
-   $this->memory->write_byte(0xFFFD, 0x80);
+   $this->memory->writeByte(0xFFFC, 0x00);
+   $this->memory->writeByte(0xFFFD, 0x80);
 
    $this->cpu->reset();
 
@@ -164,11 +164,11 @@ class DisplayIntegrationTest extends TestCase
   {
    $cpuMemory = $this->cpu->getMemory();
 
-   $cpuMemory->write_byte(0x1000, 0xAB);
-   $this->assertEquals(0xAB, $cpuMemory->read_byte(0x1000));
+   $cpuMemory->writeByte(0x1000, 0xAB);
+   $this->assertEquals(0xAB, $cpuMemory->readByte(0x1000));
 
-   $cpuMemory->write_byte(GraphicsMode::DISPLAY_BASE, ord('Z'));
-   $this->assertEquals(ord('Z'), $cpuMemory->read_byte(GraphicsMode::DISPLAY_BASE));
+   $cpuMemory->writeByte(GraphicsMode::DISPLAY_BASE, ord('Z'));
+   $this->assertEquals(ord('Z'), $cpuMemory->readByte(GraphicsMode::DISPLAY_BASE));
    $this->assertEquals(ord('Z'), $this->display->read(GraphicsMode::DISPLAY_BASE));
   }
 

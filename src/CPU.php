@@ -20,13 +20,14 @@ class CPU
   public int $pc = 0;
   public int $sp = 0;
   public int $accumulator = 0;
-  public int $register_x = 0;
-  public int $register_y = 0;
+  public int $registerX = 0;
+  public int $registerY = 0;
   public int $cycles = 0;
   public StatusRegister $status;
   public bool $halted = false;
 
   private InstructionRegister $instructionRegister;
+  /** @var array<string, callable> */
   private array $instructionHandlers = [];
   private LoadStore $loadStoreHandler;
   private Transfer $transferHandler;
@@ -80,7 +81,7 @@ class CPU
   public function step(): void
   {
     if ($this->cycles === 0) {
-      $opcode = $this->memory->read_byte($this->pc);
+      $opcode = $this->memory->readByte($this->pc);
       $this->pc++;
 
       $opcodeData = $this->instructionRegister->getOpcode(sprintf('0x%02X', $opcode));
@@ -131,23 +132,23 @@ class CPU
   public function reset(): void
   {
     $currentPC = $this->pc;
-    $this->memory->read_byte($currentPC);
-    $this->memory->read_byte($currentPC + 1);
+    $this->memory->readByte($currentPC);
+    $this->memory->readByte($currentPC + 1);
 
     $tempSP = 0x00;
     for ($cycle = 3; $cycle <= 5; $cycle++) {
       $tempSP = ($tempSP - 1) & 0xFF;
-      $this->memory->read_byte(0x0100 + $tempSP);
+      $this->memory->readByte(0x0100 + $tempSP);
     }
 
-    $resetLow = $this->memory->read_byte(0xFFFC);
-    $resetHigh = $this->memory->read_byte(0xFFFD);
+    $resetLow = $this->memory->readByte(0xFFFC);
+    $resetHigh = $this->memory->readByte(0xFFFD);
 
     $this->pc = ($resetHigh << 8) | $resetLow;
     $this->sp = 0xFD;
     $this->accumulator = 0;
-    $this->register_x = 0;
-    $this->register_y = 0;
+    $this->registerX = 0;
+    $this->registerY = 0;
     $this->status->fromInt(0b00100100);
     $this->cycles = 0;
     $this->halted = false;
@@ -157,18 +158,18 @@ class CPU
   {
     $currentPC = $this->pc;
 
-    $this->memory->read_byte($currentPC);
-    $this->memory->read_byte($currentPC + 1);
+    $this->memory->readByte($currentPC);
+    $this->memory->readByte($currentPC + 1);
 
     $tempSP = 0x00;
 
     for ($cycle = 3; $cycle <= 5; $cycle++) {
       $tempSP = ($tempSP - 1) & 0xFF;
-      $this->memory->read_byte(0x0100 + $tempSP);
+      $this->memory->readByte(0x0100 + $tempSP);
     }
 
-    $resetLow = $this->memory->read_byte(0xFFFC);
-    $resetHigh = $this->memory->read_byte(0xFFFD);
+    $resetLow = $this->memory->readByte(0xFFFC);
+    $resetHigh = $this->memory->readByte(0xFFFD);
 
     $this->pc = ($resetHigh << 8) | $resetLow;
     $this->sp = 0xFD;
@@ -261,22 +262,22 @@ class CPU
 
   public function getRegisterX(): int
   {
-    return $this->register_x;
+    return $this->registerX;
   }
 
   public function setRegisterX(int $value): void
   {
-    $this->register_x = $value & 0xFF;
+    $this->registerX = $value & 0xFF;
   }
 
   public function getRegisterY(): int
   {
-    return $this->register_y;
+    return $this->registerY;
   }
 
   public function setRegisterY(int $value): void
   {
-    $this->register_y = $value & 0xFF;
+    $this->registerY = $value & 0xFF;
   }
 
   public function getMemory(): Memory
@@ -286,14 +287,14 @@ class CPU
 
   public function pushByte(int $value): void
   {
-    $this->memory->write_byte(0x0100 + $this->sp, $value & 0xFF);
+    $this->memory->writeByte(0x0100 + $this->sp, $value & 0xFF);
     $this->sp = ($this->sp - 1) & 0xFF;
   }
 
   public function pullByte(): int
   {
     $this->sp = ($this->sp + 1) & 0xFF;
-    return $this->memory->read_byte(0x0100 + $this->sp);
+    return $this->memory->readByte(0x0100 + $this->sp);
   }
 
   public function pushWord(int $value): void
@@ -337,98 +338,98 @@ class CPU
 
   private function zeroPage(): int
   {
-    $address = $this->memory->read_byte($this->pc);
+    $address = $this->memory->readByte($this->pc);
     $this->pc++;
     return $address;
   }
 
   private function zeroPageX(): int
   {
-    $address = $this->memory->read_byte($this->pc) + $this->register_x;
+    $address = $this->memory->readByte($this->pc) + $this->registerX;
     $this->pc++;
     return $address & 0xFF;
   }
 
   private function zeroPageY(): int
   {
-    $address = $this->memory->read_byte($this->pc) + $this->register_y;
+    $address = $this->memory->readByte($this->pc) + $this->registerY;
     $this->pc++;
     return $address & 0xFF;
   }
 
   private function absolute(): int
   {
-    $low = $this->memory->read_byte($this->pc);
+    $low = $this->memory->readByte($this->pc);
     $this->pc++;
-    $high = $this->memory->read_byte($this->pc);
+    $high = $this->memory->readByte($this->pc);
     $this->pc++;
     return ($high << 8) | $low;
   }
 
   private function absoluteX(): int
   {
-    $low = $this->memory->read_byte($this->pc);
+    $low = $this->memory->readByte($this->pc);
     $this->pc++;
-    $high = $this->memory->read_byte($this->pc);
+    $high = $this->memory->readByte($this->pc);
     $this->pc++;
-    $address = (($high << 8) | $low) + $this->register_x;
+    $address = (($high << 8) | $low) + $this->registerX;
 
     return $address & 0xFFFF;
   }
 
   private function absoluteY(): int
   {
-    $low = $this->memory->read_byte($this->pc);
+    $low = $this->memory->readByte($this->pc);
     $this->pc++;
-    $high = $this->memory->read_byte($this->pc);
+    $high = $this->memory->readByte($this->pc);
     $this->pc++;
-    $address = (($high << 8) | $low) + $this->register_y;
+    $address = (($high << 8) | $low) + $this->registerY;
 
     return $address & 0xFFFF;
   }
 
   private function indirectX(): int
   {
-    $zeroPageAddress = $this->memory->read_byte($this->pc) + $this->register_x;
+    $zeroPageAddress = $this->memory->readByte($this->pc) + $this->registerX;
     $this->pc++;
-    $low = $this->memory->read_byte($zeroPageAddress & 0xFF);
-    $high = $this->memory->read_byte(($zeroPageAddress + 1) & 0xFF);
+    $low = $this->memory->readByte($zeroPageAddress & 0xFF);
+    $high = $this->memory->readByte(($zeroPageAddress + 1) & 0xFF);
 
     return ($high << 8) | $low;
   }
 
   private function indirectY(): int
   {
-    $zeroPageAddress = $this->memory->read_byte($this->pc);
+    $zeroPageAddress = $this->memory->readByte($this->pc);
     $this->pc++;
-    $low = $this->memory->read_byte($zeroPageAddress & 0xFF);
-    $high = $this->memory->read_byte(($zeroPageAddress + 1) & 0xFF);
-    $address = (($high << 8) | $low) + $this->register_y;
+    $low = $this->memory->readByte($zeroPageAddress & 0xFF);
+    $high = $this->memory->readByte(($zeroPageAddress + 1) & 0xFF);
+    $address = (($high << 8) | $low) + $this->registerY;
 
     return $address & 0xFFFF;
   }
 
   private function absoluteIndirect(): int
   {
-    $low = $this->memory->read_byte($this->pc);
+    $low = $this->memory->readByte($this->pc);
     $this->pc++;
-    $high = $this->memory->read_byte($this->pc);
+    $high = $this->memory->readByte($this->pc);
     $this->pc++;
     $indirectAddress = ($high << 8) | $low;
 
     if (($indirectAddress & 0xFF) == 0xFF) {
-      $targetLow = $this->memory->read_byte($indirectAddress);
-      $targetHigh = $this->memory->read_byte($indirectAddress & 0xFF00);
+      $targetLow = $this->memory->readByte($indirectAddress);
+      $targetHigh = $this->memory->readByte($indirectAddress & 0xFF00);
 
       return ($targetHigh << 8) | $targetLow;
     } else {
-      return $this->memory->read_word($indirectAddress);
+      return $this->memory->readWord($indirectAddress);
     }
   }
 
   private function relative(): int
   {
-    $offset = $this->memory->read_byte($this->pc);
+    $offset = $this->memory->readByte($this->pc);
     $this->pc++;
     return $offset;
   }
@@ -450,8 +451,8 @@ class CPU
       $this->pc,
       $this->sp,
       $this->accumulator,
-      $this->register_x,
-      $this->register_y
+      $this->registerX,
+      $this->registerY
     );
   }
 

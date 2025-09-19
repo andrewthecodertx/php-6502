@@ -15,10 +15,10 @@ class IncDec
   public function inc(Opcode $opcode): int
   {
     $address = $this->cpu->getAddress($opcode->getAddressingMode());
-    $value = $this->cpu->getMemory()->read_byte($address);
+    $value = $this->cpu->getMemory()->readByte($address);
     $result = ($value + 1) & 0xFF;
 
-    $this->cpu->getMemory()->write_byte($address, $result);
+    $this->cpu->getMemory()->writeByte($address, $result);
 
 
     $this->cpu->status->set(StatusRegister::ZERO, $result === 0);
@@ -30,10 +30,10 @@ class IncDec
   public function dec(Opcode $opcode): int
   {
     $address = $this->cpu->getAddress($opcode->getAddressingMode());
-    $value = $this->cpu->getMemory()->read_byte($address);
+    $value = $this->cpu->getMemory()->readByte($address);
     $result = ($value - 1) & 0xFF;
 
-    $this->cpu->getMemory()->write_byte($address, $result);
+    $this->cpu->getMemory()->writeByte($address, $result);
 
 
     $this->cpu->status->set(StatusRegister::ZERO, $result === 0);

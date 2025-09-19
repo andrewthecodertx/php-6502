@@ -24,11 +24,11 @@ class ShiftRotate
       $this->cpu->setAccumulator($result & 0xFF);
     } else {
       $address = $this->cpu->getAddress($addressingMode);
-      $value = $this->cpu->getMemory()->read_byte($address);
+      $value = $this->cpu->getMemory()->readByte($address);
       $result = $value << 1;
 
       $this->cpu->status->set(StatusRegister::CARRY, ($value & 0x80) !== 0);
-      $this->cpu->getMemory()->write_byte($address, $result & 0xFF);
+      $this->cpu->getMemory()->writeByte($address, $result & 0xFF);
     }
 
 
@@ -50,11 +50,11 @@ class ShiftRotate
       $this->cpu->setAccumulator($result);
     } else {
       $address = $this->cpu->getAddress($addressingMode);
-      $value = $this->cpu->getMemory()->read_byte($address);
+      $value = $this->cpu->getMemory()->readByte($address);
       $result = $value >> 1;
 
       $this->cpu->status->set(StatusRegister::CARRY, ($value & 0x01) !== 0);
-      $this->cpu->getMemory()->write_byte($address, $result);
+      $this->cpu->getMemory()->writeByte($address, $result);
     }
 
 
@@ -77,11 +77,11 @@ class ShiftRotate
       $this->cpu->setAccumulator($result & 0xFF);
     } else {
       $address = $this->cpu->getAddress($addressingMode);
-      $value = $this->cpu->getMemory()->read_byte($address);
+      $value = $this->cpu->getMemory()->readByte($address);
       $result = ($value << 1) | $carry;
 
       $this->cpu->status->set(StatusRegister::CARRY, ($value & 0x80) !== 0);
-      $this->cpu->getMemory()->write_byte($address, $result & 0xFF);
+      $this->cpu->getMemory()->writeByte($address, $result & 0xFF);
     }
 
 
@@ -104,11 +104,11 @@ class ShiftRotate
       $this->cpu->setAccumulator($result);
     } else {
       $address = $this->cpu->getAddress($addressingMode);
-      $value = $this->cpu->getMemory()->read_byte($address);
+      $value = $this->cpu->getMemory()->readByte($address);
       $result = ($value >> 1) | $carry;
 
       $this->cpu->status->set(StatusRegister::CARRY, ($value & 0x01) !== 0);
-      $this->cpu->getMemory()->write_byte($address, $result);
+      $this->cpu->getMemory()->writeByte($address, $result);
     }
 
 

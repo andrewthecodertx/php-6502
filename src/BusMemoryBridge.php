@@ -16,12 +16,12 @@ class BusMemoryBridge extends Memory
   parent::__construct();
   }
 
-  public function read_byte(int $addr): int
+  public function readByte(int $addr): int
   {
   return $this->bus->read($addr);
   }
 
-  public function write_byte(int $addr, int $value): void
+  public function writeByte(int $addr, int $value): void
   {
   $this->bus->write($addr, $value);
   }

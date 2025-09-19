@@ -56,9 +56,9 @@ class MonitoredCPUTest extends TestCase
 
   public function testSilentStep(): void
   {
-   $this->memory->write_byte(0x8000, 0xEA);
-   $this->memory->write_byte(0xFFFC, 0x00);
-   $this->memory->write_byte(0xFFFD, 0x80);
+   $this->memory->writeByte(0x8000, 0xEA);
+   $this->memory->writeByte(0xFFFC, 0x00);
+   $this->memory->writeByte(0xFFFD, 0x80);
 
    $this->cpu->reset();
 
@@ -71,9 +71,9 @@ class MonitoredCPUTest extends TestCase
 
   public function testSilentExecuteInstruction(): void
   {
-   $this->memory->write_byte(0x8000, 0xEA);
-   $this->memory->write_byte(0xFFFC, 0x00);
-   $this->memory->write_byte(0xFFFD, 0x80);
+   $this->memory->writeByte(0x8000, 0xEA);
+   $this->memory->writeByte(0xFFFC, 0x00);
+   $this->memory->writeByte(0xFFFD, 0x80);
 
    $this->cpu->reset();
 

@@ -94,11 +94,11 @@ class DisplayTimingTest extends TestCase
 
    $address = 0x8000;
    foreach ($program as $byte) {
-   $this->memory->write_byte($address++, $byte);
+   $this->memory->writeByte($address++, $byte);
    }
 
-   $this->memory->write_byte(0xFFFC, 0x00);
-   $this->memory->write_byte(0xFFFD, 0x80);
+   $this->memory->writeByte(0xFFFC, 0x00);
+   $this->memory->writeByte(0xFFFD, 0x80);
 
    $this->cpu->reset();
 

@@ -15,7 +15,8 @@ class Memory
   private const FREE_MEMORY_START = 0x0200;
   private const FREE_MEMORY_END = 0xFFFF;
 
-  private $memory = array();
+  /** @var array<int, int> */
+  private array $memory = [];
 
   public function __construct() {}
 
@@ -27,7 +28,7 @@ class Memory
     }
   }
 
-  public function read_byte(int $addr): int
+  public function readByte(int $addr): int
   {
     $addr = $addr & 0xFFFF;
     if ($addr >= self::ZERO_PAGE_START && $addr <= self::FREE_MEMORY_END) {
@@ -39,7 +40,7 @@ class Memory
     return 0;
   }
 
-  public function write_byte(int $addr, int $value): void
+  public function writeByte(int $addr, int $value): void
   {
     $addr = $addr & 0xFFFF;
     if ($addr >= self::ZERO_PAGE_START && $addr <= self::FREE_MEMORY_END) {
@@ -47,25 +48,25 @@ class Memory
     }
   }
 
-  public function read_word(int $addr): int
+  public function readWord(int $addr): int
   {
-    return ($this->read_byte($addr + 1) << 8) | $this->read_byte($addr);
+    return ($this->readByte($addr + 1) << 8) | $this->readByte($addr);
   }
 
-  public function write_word(int $addr, int $value): void
+  public function writeWord(int $addr, int $value): void
   {
-    $this->write_byte($addr, $value & 0xFF);
-    $this->write_byte($addr + 1, ($value >> 8) & 0xFF);
+    $this->writeByte($addr, $value & 0xFF);
+    $this->writeByte($addr + 1, ($value >> 8) & 0xFF);
   }
 
 
   public function push(int $value, &$stack_pointer): void
   {
-    $this->write_byte(self::STACK_START + $stack_pointer--, $value);
+    $this->writeByte(self::STACK_START + $stack_pointer--, $value);
   }
 
   public function pop(&$stack_pointer): int
   {
-    return $this->read_byte(self::STACK_START + ++$stack_pointer);
+    return $this->readByte(self::STACK_START + ++$stack_pointer);
   }
 }

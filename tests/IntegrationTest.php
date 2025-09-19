@@ -158,7 +158,7 @@ class IntegrationTest extends TestCase
   $busMonitor->reset();
 
   foreach ($testAreas as [$address, $value]) {
-  $memory->write_byte($address, $value);
+  $memory->writeByte($address, $value);
   }
 
   $writeActivity = $busMonitor->getBusActivity();
@@ -167,7 +167,7 @@ class IntegrationTest extends TestCase
   $busMonitor->reset();
 
   foreach ($testAreas as [$address, $expectedValue]) {
-  $actualValue = $memory->read_byte($address);
+  $actualValue = $memory->readByte($address);
   $this->assertEquals($expectedValue, $actualValue);
   }
 
@@ -189,8 +189,8 @@ class IntegrationTest extends TestCase
   $cpu = new MonitoredCPU($memory, false);
 
   
-  $memory->write_byte(0xFFFC, 0x00);
-  $memory->write_byte(0xFFFD, 0x80);
+  $memory->writeByte(0xFFFC, 0x00);
+  $memory->writeByte(0xFFFD, 0x80);
 
   $cpu->reset();
 
@@ -280,8 +280,8 @@ class IntegrationTest extends TestCase
   
   
   
-  $memory->write_byte(0x45, 0x78); 
-  $memory->write_byte(0x46, 0x56); 
+  $memory->writeByte(0x45, 0x78); 
+  $memory->writeByte(0x46, 0x56); 
 
   $cpu->pc = 0x8030;
   $cpu->setRegisterX(0x05);

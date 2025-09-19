@@ -78,13 +78,13 @@ function runProgram(string $inputFile): void
   $cpu = new CPU($bus);
 
   foreach ($program as $addr => $byte) {
-  $memory->write_byte($addr, $byte);
+  $bus->write($addr, $byte);
   }
 
   if (!isset($program[0xFFFC]) && !isset($program[0xFFFD])) {
   $startAddr = min(array_keys($program));
-  $memory->write_byte(0xFFFC, $startAddr & 0xFF);
-  $memory->write_byte(0xFFFD, ($startAddr >> 8) & 0xFF);
+  $bus->write(0xFFFC, $startAddr & 0xFF);
+  $bus->write(0xFFFD, ($startAddr >> 8) & 0xFF);
   echo "Set reset vector to: 0x" . sprintf('%04X', $startAddr) . "\n";
   }
 
@@ -101,7 +101,7 @@ function runProgram(string $inputFile): void
 
   while ($instructionCount < 100000) {
   $input = fread(STDIN, 1024);
-  if ($input !== false && trim(strtolower($input)) === 'q') {
+  if ($input !== false && $input !== '' && strpos(strtolower(trim($input)), 'q') !== false) {
    echo "\nQuitting...\n";
    break;
   }

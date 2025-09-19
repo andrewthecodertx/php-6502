@@ -14,7 +14,7 @@ class IOMemory extends Memory
     $this->console = new ConsoleIO();
   }
 
-  public function read_byte(int $addr): int
+  public function readByte(int $addr): int
   {
     $addr = $addr & 0xFFFF;
 
@@ -27,11 +27,11 @@ class IOMemory extends Memory
         return $this->console->readCharacter();
 
       default:
-        return parent::read_byte($addr);
+        return parent::readByte($addr);
     }
   }
 
-  public function write_byte(int $addr, int $value): void
+  public function writeByte(int $addr, int $value): void
   {
     $addr = $addr & 0xFFFF;
 
@@ -42,7 +42,7 @@ class IOMemory extends Memory
         break;
 
       default:
-        parent::write_byte($addr, $value);
+        parent::writeByte($addr, $value);
         break;
     }
   }

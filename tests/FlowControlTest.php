@@ -33,8 +33,8 @@ class FlowControlTest extends TestCase
   $this->cpu->status->set(StatusRegister::ZERO, true);
   $this->cpu->pc = 0x8000;
 
-  $this->memory->write_byte(0x8000, 0xF0); 
-  $this->memory->write_byte(0x8001, 0x05); 
+  $this->memory->writeByte(0x8000, 0xF0); 
+  $this->memory->writeByte(0x8001, 0x05); 
 
   $this->executeCompleteInstruction();
 
@@ -47,8 +47,8 @@ class FlowControlTest extends TestCase
   $this->cpu->status->set(StatusRegister::ZERO, false);
   $this->cpu->pc = 0x8000;
 
-  $this->memory->write_byte(0x8000, 0xF0); 
-  $this->memory->write_byte(0x8001, 0x05); 
+  $this->memory->writeByte(0x8000, 0xF0); 
+  $this->memory->writeByte(0x8001, 0x05); 
 
   $this->executeCompleteInstruction();
 
@@ -61,8 +61,8 @@ class FlowControlTest extends TestCase
   $this->cpu->status->set(StatusRegister::ZERO, false);
   $this->cpu->pc = 0x8000;
 
-  $this->memory->write_byte(0x8000, 0xD0); 
-  $this->memory->write_byte(0x8001, 0x10); 
+  $this->memory->writeByte(0x8000, 0xD0); 
+  $this->memory->writeByte(0x8001, 0x10); 
 
   $this->executeCompleteInstruction();
 
@@ -75,8 +75,8 @@ class FlowControlTest extends TestCase
   $this->cpu->status->set(StatusRegister::ZERO, true);
   $this->cpu->pc = 0x8010;
 
-  $this->memory->write_byte(0x8010, 0xF0); 
-  $this->memory->write_byte(0x8011, 0xF0); 
+  $this->memory->writeByte(0x8010, 0xF0); 
+  $this->memory->writeByte(0x8011, 0xF0); 
 
   $this->executeCompleteInstruction();
 
@@ -89,8 +89,8 @@ class FlowControlTest extends TestCase
   $this->cpu->status->set(StatusRegister::CARRY, false);
   $this->cpu->pc = 0x8000;
 
-  $this->memory->write_byte(0x8000, 0x90); 
-  $this->memory->write_byte(0x8001, 0x08); 
+  $this->memory->writeByte(0x8000, 0x90); 
+  $this->memory->writeByte(0x8001, 0x08); 
 
   $this->executeCompleteInstruction();
 
@@ -103,8 +103,8 @@ class FlowControlTest extends TestCase
   $this->cpu->status->set(StatusRegister::CARRY, true);
   $this->cpu->pc = 0x8000;
 
-  $this->memory->write_byte(0x8000, 0xB0); 
-  $this->memory->write_byte(0x8001, 0x0C); 
+  $this->memory->writeByte(0x8000, 0xB0); 
+  $this->memory->writeByte(0x8001, 0x0C); 
 
   $this->executeCompleteInstruction();
 
@@ -117,8 +117,8 @@ class FlowControlTest extends TestCase
   $this->cpu->status->set(StatusRegister::NEGATIVE, false);
   $this->cpu->pc = 0x8000;
 
-  $this->memory->write_byte(0x8000, 0x10); 
-  $this->memory->write_byte(0x8001, 0x04); 
+  $this->memory->writeByte(0x8000, 0x10); 
+  $this->memory->writeByte(0x8001, 0x04); 
 
   $this->executeCompleteInstruction();
 
@@ -131,8 +131,8 @@ class FlowControlTest extends TestCase
   $this->cpu->status->set(StatusRegister::NEGATIVE, true);
   $this->cpu->pc = 0x8000;
 
-  $this->memory->write_byte(0x8000, 0x30); 
-  $this->memory->write_byte(0x8001, 0x06); 
+  $this->memory->writeByte(0x8000, 0x30); 
+  $this->memory->writeByte(0x8001, 0x06); 
 
   $this->executeCompleteInstruction();
 
@@ -144,9 +144,9 @@ class FlowControlTest extends TestCase
   
   $this->cpu->pc = 0x8000;
 
-  $this->memory->write_byte(0x8000, 0x4C); 
-  $this->memory->write_byte(0x8001, 0x34); 
-  $this->memory->write_byte(0x8002, 0x12); 
+  $this->memory->writeByte(0x8000, 0x4C); 
+  $this->memory->writeByte(0x8001, 0x34); 
+  $this->memory->writeByte(0x8002, 0x12); 
 
   $this->executeCompleteInstruction();
 
@@ -159,13 +159,13 @@ class FlowControlTest extends TestCase
   $this->cpu->pc = 0x8000;
 
   
-  $this->memory->write_byte(0x8000, 0x6C); 
-  $this->memory->write_byte(0x8001, 0x20); 
-  $this->memory->write_byte(0x8002, 0x30); 
+  $this->memory->writeByte(0x8000, 0x6C); 
+  $this->memory->writeByte(0x8001, 0x20); 
+  $this->memory->writeByte(0x8002, 0x30); 
 
   
-  $this->memory->write_byte(0x3020, 0x78); 
-  $this->memory->write_byte(0x3021, 0x56); 
+  $this->memory->writeByte(0x3020, 0x78); 
+  $this->memory->writeByte(0x3021, 0x56); 
 
   $this->executeCompleteInstruction();
 
@@ -179,9 +179,9 @@ class FlowControlTest extends TestCase
   $this->cpu->sp = 0xFF; 
 
   
-  $this->memory->write_byte(0x8000, 0x20); 
-  $this->memory->write_byte(0x8001, 0x34); 
-  $this->memory->write_byte(0x8002, 0x12); 
+  $this->memory->writeByte(0x8000, 0x20); 
+  $this->memory->writeByte(0x8001, 0x34); 
+  $this->memory->writeByte(0x8002, 0x12); 
 
   $this->executeCompleteInstruction();
 
@@ -196,7 +196,7 @@ class FlowControlTest extends TestCase
   $this->cpu->pushWord(0x8002);
 
   
-  $this->memory->write_byte(0x1234, 0x60); 
+  $this->memory->writeByte(0x1234, 0x60); 
   $this->cpu->pc = 0x1234;
 
   $this->executeCompleteInstruction();
@@ -212,18 +212,18 @@ class FlowControlTest extends TestCase
   $this->cpu->sp = 0xFF;
 
   
-  $this->memory->write_byte(0x8000, 0x48); 
+  $this->memory->writeByte(0x8000, 0x48); 
   $this->cpu->pc = 0x8000;
   $this->executeCompleteInstruction();
 
   $this->assertEquals(0xFE, $this->cpu->sp); 
-  $this->assertEquals(0x42, $this->memory->read_byte(0x01FF)); 
+  $this->assertEquals(0x42, $this->memory->readByte(0x01FF)); 
 
   
   $this->cpu->setAccumulator(0x00);
 
   
-  $this->memory->write_byte(0x8001, 0x68); 
+  $this->memory->writeByte(0x8001, 0x68); 
   $this->executeCompleteInstruction();
 
   $this->assertEquals(0x42, $this->cpu->getAccumulator()); 
@@ -243,7 +243,7 @@ class FlowControlTest extends TestCase
   $this->cpu->status->set(StatusRegister::NEGATIVE, false);
 
   
-  $this->memory->write_byte(0x8000, 0x08); 
+  $this->memory->writeByte(0x8000, 0x08); 
   $this->cpu->pc = 0x8000;
   $this->executeCompleteInstruction();
 
@@ -254,7 +254,7 @@ class FlowControlTest extends TestCase
   $this->cpu->status->set(StatusRegister::ZERO, false);
 
   
-  $this->memory->write_byte(0x8001, 0x28); 
+  $this->memory->writeByte(0x8001, 0x28); 
   $this->executeCompleteInstruction();
 
   $this->assertTrue($this->cpu->status->get(StatusRegister::CARRY)); 
@@ -267,23 +267,23 @@ class FlowControlTest extends TestCase
   
 
   
-  $this->memory->write_byte(0x8000, 0x38); 
+  $this->memory->writeByte(0x8000, 0x38); 
   $this->cpu->pc = 0x8000;
   $this->executeCompleteInstruction();
   $this->assertTrue($this->cpu->status->get(StatusRegister::CARRY));
 
   
-  $this->memory->write_byte(0x8001, 0x18); 
+  $this->memory->writeByte(0x8001, 0x18); 
   $this->executeCompleteInstruction();
   $this->assertFalse($this->cpu->status->get(StatusRegister::CARRY));
 
   
-  $this->memory->write_byte(0x8002, 0x78); 
+  $this->memory->writeByte(0x8002, 0x78); 
   $this->executeCompleteInstruction();
   $this->assertTrue($this->cpu->status->get(StatusRegister::INTERRUPT_DISABLE));
 
   
-  $this->memory->write_byte(0x8003, 0x58); 
+  $this->memory->writeByte(0x8003, 0x58); 
   $this->executeCompleteInstruction();
   $this->assertFalse($this->cpu->status->get(StatusRegister::INTERRUPT_DISABLE));
   }
