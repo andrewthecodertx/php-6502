@@ -16,7 +16,7 @@ class IntegrationTest extends TestCase
     
     $busMonitor = new BusMonitor();
     $memory = new MonitoredMemory($busMonitor);
-    $cpu = new MonitoredCPU($memory);
+    $cpu = new MonitoredCPU($memory, false);
 
     
     $memory->initialize([
@@ -186,7 +186,7 @@ class IntegrationTest extends TestCase
   {
     $busMonitor = new BusMonitor();
     $memory = new MonitoredMemory($busMonitor);
-    $cpu = new MonitoredCPU($memory);
+    $cpu = new MonitoredCPU($memory, false);
 
     
     $memory->write_byte(0xFFFC, 0x00);
@@ -219,7 +219,7 @@ class IntegrationTest extends TestCase
   {
     $busMonitor = new BusMonitor();
     $memory = new MonitoredMemory($busMonitor);
-    $cpu = new MonitoredCPU($memory);
+    $cpu = new MonitoredCPU($memory, false);
 
     
     $memory->initialize([

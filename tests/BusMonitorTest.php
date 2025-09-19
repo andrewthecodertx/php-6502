@@ -146,7 +146,7 @@ class BusMonitorTest extends TestCase
 
   public function testMonitoredCPUIntegration(): void
   {
-    $cpu = new MonitoredCPU($this->memory);
+    $cpu = new MonitoredCPU($this->memory, false);
 
     
     $this->memory->write_byte(0xFFFC, 0x00);
