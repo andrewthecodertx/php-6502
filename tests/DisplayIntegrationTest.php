@@ -16,8 +16,8 @@ class DisplayIntegrationTest extends TestCase
   private CPU $cpu;
   private SystemBus $bus;
   private Memory $memory;
-  private TextDisplay $display;
-  private EnhancedConsole $console;
+  private GraphicsMode $display;
+  private TerminalMode $console;
 
   protected function setUp(): void
   {
