@@ -15,80 +15,80 @@ class ConsoleIO
 
   public function __construct()
   {
-  
-  if (php_sapi_name() === 'cli') {
-  stream_set_blocking(STDIN, false);
-  }
+
+    if (php_sapi_name() === 'cli') {
+      stream_set_blocking(STDIN, false);
+    }
   }
 
   public function writeCharacter(int $character): void
   {
-  $char = chr($character & 0x7F); 
+    $char = chr($character & 0x7F);
 
-  
-  switch ($character) {
-  case 0x0A: 
-   echo "\n";
-   break;
-  case 0x0D: 
-   echo "\r";
-   break;
-  case 0x08: 
-   echo "\b";
-   break;
-  case 0x07: 
-   echo "\a";
-   break;
-  default:
-   if ($character >= 0x20 && $character <= 0x7E) {
-  echo $char;
-   }
-   break;
-  }
 
-  
-  if (ob_get_level()) {
-  ob_flush();
-  }
-  flush();
+    switch ($character) {
+      case 0x0A:
+        echo "\n";
+        break;
+      case 0x0D:
+        echo "\r";
+        break;
+      case 0x08:
+        echo "\b";
+        break;
+      case 0x07:
+        echo "\a";
+        break;
+      default:
+        if ($character >= 0x20 && $character <= 0x7E) {
+          echo $char;
+        }
+        break;
+    }
+
+
+    if (ob_get_level()) {
+      ob_flush();
+    }
+    flush();
   }
 
   public function getInputStatus(): int
   {
-  $this->checkForInput();
-  return $this->inputReady ? 0x80 : 0x00; 
+    $this->checkForInput();
+    return $this->inputReady ? 0x80 : 0x00;
   }
 
   public function readCharacter(): int
   {
-  $this->checkForInput();
+    $this->checkForInput();
 
-  if (!empty($this->inputBuffer)) {
-  $char = array_shift($this->inputBuffer);
-  $this->inputReady = !empty($this->inputBuffer);
-  return ord($char);
-  }
+    if (!empty($this->inputBuffer)) {
+      $char = array_shift($this->inputBuffer);
+      $this->inputReady = !empty($this->inputBuffer);
+      return ord($char);
+    }
 
-  return 0x00; 
+    return 0x00;
   }
 
   private function checkForInput(): void
   {
-  if (php_sapi_name() === 'cli') {
-  $input = fread(STDIN, 1024);
-  if ($input !== false && $input !== '') {
-   
-   for ($i = 0; $i < strlen($input); $i++) {
-  $this->inputBuffer[] = $input[$i];
-   }
-   $this->inputReady = !empty($this->inputBuffer);
-  }
-  }
+    if (php_sapi_name() === 'cli') {
+      $input = fread(STDIN, 1024);
+      if ($input !== false && $input !== '') {
+
+        for ($i = 0; $i < strlen($input); $i++) {
+          $this->inputBuffer[] = $input[$i];
+        }
+        $this->inputReady = !empty($this->inputBuffer);
+      }
+    }
   }
 
   public function hasInput(): bool
   {
-  $this->checkForInput();
-  return $this->inputReady;
+    $this->checkForInput();
+    return $this->inputReady;
   }
 }

@@ -14,62 +14,62 @@ class Logic
 
   public function and(Opcode $opcode): int
   {
-  $address = $this->cpu->getAddress($opcode->getAddressingMode());
-  $value = $this->cpu->getMemory()->read_byte($address);
-  $result = $this->cpu->getAccumulator() & $value;
+    $address = $this->cpu->getAddress($opcode->getAddressingMode());
+    $value = $this->cpu->getMemory()->read_byte($address);
+    $result = $this->cpu->getAccumulator() & $value;
 
-  $this->cpu->setAccumulator($result);
+    $this->cpu->setAccumulator($result);
 
-  
-  $this->cpu->status->set(StatusRegister::ZERO, $result === 0);
-  $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);
 
-  return $opcode->getCycles();
+    $this->cpu->status->set(StatusRegister::ZERO, $result === 0);
+    $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);
+
+    return $opcode->getCycles();
   }
 
   public function ora(Opcode $opcode): int
   {
-  $address = $this->cpu->getAddress($opcode->getAddressingMode());
-  $value = $this->cpu->getMemory()->read_byte($address);
-  $result = $this->cpu->getAccumulator() | $value;
+    $address = $this->cpu->getAddress($opcode->getAddressingMode());
+    $value = $this->cpu->getMemory()->read_byte($address);
+    $result = $this->cpu->getAccumulator() | $value;
 
-  $this->cpu->setAccumulator($result);
+    $this->cpu->setAccumulator($result);
 
-  
-  $this->cpu->status->set(StatusRegister::ZERO, $result === 0);
-  $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);
 
-  return $opcode->getCycles();
+    $this->cpu->status->set(StatusRegister::ZERO, $result === 0);
+    $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);
+
+    return $opcode->getCycles();
   }
 
   public function eor(Opcode $opcode): int
   {
-  $address = $this->cpu->getAddress($opcode->getAddressingMode());
-  $value = $this->cpu->getMemory()->read_byte($address);
-  $result = $this->cpu->getAccumulator() ^ $value;
+    $address = $this->cpu->getAddress($opcode->getAddressingMode());
+    $value = $this->cpu->getMemory()->read_byte($address);
+    $result = $this->cpu->getAccumulator() ^ $value;
 
-  $this->cpu->setAccumulator($result);
+    $this->cpu->setAccumulator($result);
 
-  
-  $this->cpu->status->set(StatusRegister::ZERO, $result === 0);
-  $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);
 
-  return $opcode->getCycles();
+    $this->cpu->status->set(StatusRegister::ZERO, $result === 0);
+    $this->cpu->status->set(StatusRegister::NEGATIVE, ($result & 0x80) !== 0);
+
+    return $opcode->getCycles();
   }
 
   public function bit(Opcode $opcode): int
   {
-  $address = $this->cpu->getAddress($opcode->getAddressingMode());
-  $value = $this->cpu->getMemory()->read_byte($address);
-  $result = $this->cpu->getAccumulator() & $value;
+    $address = $this->cpu->getAddress($opcode->getAddressingMode());
+    $value = $this->cpu->getMemory()->read_byte($address);
+    $result = $this->cpu->getAccumulator() & $value;
 
-  
-  $this->cpu->status->set(StatusRegister::ZERO, $result === 0);
-  $this->cpu->status->set(StatusRegister::NEGATIVE, ($value & 0x80) !== 0); 
-  $this->cpu->status->set(StatusRegister::OVERFLOW, ($value & 0x40) !== 0);  
 
-  
+    $this->cpu->status->set(StatusRegister::ZERO, $result === 0);
+    $this->cpu->status->set(StatusRegister::NEGATIVE, ($value & 0x80) !== 0);
+    $this->cpu->status->set(StatusRegister::OVERFLOW, ($value & 0x40) !== 0);
 
-  return $opcode->getCycles();
+
+
+    return $opcode->getCycles();
   }
 }

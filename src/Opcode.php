@@ -7,47 +7,47 @@ namespace Emulator;
 class Opcode
 {
   public function __construct(
-  private readonly string $opcode,
-  private readonly string $mnemonic,
-  private readonly string $addressingMode,
-  private readonly int $bytes,
-  private readonly int $cycles,
-  private readonly ?string $additionalCycles = null,
-  private readonly ?string $operation = null
+    private readonly string $opcode,
+    private readonly string $mnemonic,
+    private readonly string $addressingMode,
+    private readonly int $bytes,
+    private readonly int $cycles,
+    private readonly ?string $additionalCycles = null,
+    private readonly ?string $operation = null
   ) {}
 
   public function getOpcode(): string
   {
-  return $this->opcode;
+    return $this->opcode;
   }
 
   public function getMnemonic(): string
   {
-  return $this->mnemonic;
+    return $this->mnemonic;
   }
 
   public function getAddressingMode(): string
   {
-  return $this->addressingMode;
+    return $this->addressingMode;
   }
 
   public function getBytes(): int
   {
-  return $this->bytes;
+    return $this->bytes;
   }
 
   public function getCycles(): int
   {
-  return $this->cycles;
+    return $this->cycles;
   }
 
   public function getAdditionalCycles(): ?string
   {
-  return $this->additionalCycles;
+    return $this->additionalCycles;
   }
 
   public function getOperation(): ?string
   {
-  return $this->operation;
+    return $this->operation;
   }
 }

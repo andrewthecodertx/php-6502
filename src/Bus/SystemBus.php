@@ -13,56 +13,56 @@ class SystemBus implements BusInterface
 
   public function __construct(Memory $memory)
   {
-  $this->memory = $memory;
+    $this->memory = $memory;
   }
 
   public function addPeripheral(PeripheralInterface $peripheral): void
   {
-  $this->peripherals[] = $peripheral;
+    $this->peripherals[] = $peripheral;
   }
 
   public function read(int $address): int
   {
-  $address = $address & 0xFFFF;
+    $address = $address & 0xFFFF;
 
-  
-  foreach ($this->peripherals as $peripheral) {
-  if ($peripheral->handlesAddress($address)) {
-   return $peripheral->read($address);
-  }
-  }
 
-  
-  return $this->memory->read_byte($address);
+    foreach ($this->peripherals as $peripheral) {
+      if ($peripheral->handlesAddress($address)) {
+        return $peripheral->read($address);
+      }
+    }
+
+
+    return $this->memory->read_byte($address);
   }
 
   public function write(int $address, int $value): void
   {
-  $address = $address & 0xFFFF;
-  $value = $value & 0xFF;
+    $address = $address & 0xFFFF;
+    $value = $value & 0xFF;
 
-  
-  foreach ($this->peripherals as $peripheral) {
-  if ($peripheral->handlesAddress($address)) {
-   $peripheral->write($address, $value);
-   return;
-  }
-  }
 
-  
-  $this->memory->write_byte($address, $value);
+    foreach ($this->peripherals as $peripheral) {
+      if ($peripheral->handlesAddress($address)) {
+        $peripheral->write($address, $value);
+        return;
+      }
+    }
+
+
+    $this->memory->write_byte($address, $value);
   }
 
   public function tick(): void
   {
-  
-  foreach ($this->peripherals as $peripheral) {
-  $peripheral->tick();
-  }
+
+    foreach ($this->peripherals as $peripheral) {
+      $peripheral->tick();
+    }
   }
 
   public function getMemory(): Memory
   {
-  return $this->memory;
+    return $this->memory;
   }
 }
